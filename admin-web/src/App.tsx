@@ -74,6 +74,7 @@ function App() {
   const [usuariosList, setUsuariosList] = useState<any[]>([]);
   const [cobradoresList, setCobradoresList] = useState<any[]>([]);
   const [cobradoresUbicaciones, setCobradoresUbicaciones] = useState<any[]>([]);
+  const [adminMapFilter, setAdminMapFilter] = useState<'both' | 'clients' | 'collectors'>('both');
 
   // Editing States (Exclusivos para ADMIN)
   const [editingClient, setEditingClient] = useState<any | null>(null);
@@ -738,42 +739,47 @@ function App() {
       }).addTo(map);
 
       if (user?.rol === 'ADMIN') {
-        pagos.forEach(p => {
-          if (p.lat && p.lng) {
-            L.marker([p.lat, p.lng])
-              .addTo(map)
-              .bindPopup(`
-                <div style="font-family: 'Outfit', sans-serif; color: #111; min-width: 140px;">
-                  <h4 style="margin: 0 0 4px 0; font-size: 0.9rem; font-weight: 700;">${p.clienteNombre}</h4>
-                  <p style="margin: 0 0 4px 0; font-size: 0.8rem;">Abono: <b>$${p.monto.toLocaleString()} COP</b></p>
-                  <p style="margin: 0 0 2px 0; font-size: 0.7rem; color: #555;">${p.fecha.split('T')[0]}</p>
-                  <span style="font-size: 0.7rem; color: #888; text-transform: uppercase;">Cobró: ${p.cobrador}</span>
-                </div>
-              `);
-          }
-        });
+        // Dibujar pagos del día (si el filtro es 'both' o 'clients')
+        if (adminMapFilter === 'both' || adminMapFilter === 'clients') {
+          pagos.forEach(p => {
+            if (p.lat && p.lng) {
+              L.marker([p.lat, p.lng])
+                .addTo(map)
+                .bindPopup(`
+                  <div style="font-family: 'Outfit', sans-serif; color: #111; min-width: 140px;">
+                    <h4 style="margin: 0 0 4px 0; font-size: 0.9rem; font-weight: 700;">${p.clienteNombre}</h4>
+                    <p style="margin: 0 0 4px 0; font-size: 0.8rem;">Abono: <b>$${p.monto.toLocaleString()} COP</b></p>
+                    <p style="margin: 0 0 2px 0; font-size: 0.7rem; color: #555;">${p.fecha.split('T')[0]}</p>
+                    <span style="font-size: 0.7rem; color: #888; text-transform: uppercase;">Cobró: ${p.cobrador}</span>
+                  </div>
+                `);
+            }
+          });
+        }
 
-        // Dibujar ubicaciones en tiempo real de los cobradores
-        cobradoresUbicaciones.forEach(c => {
-          if (c.lat && c.lng) {
-            const motoIcon = L.divIcon({
-              className: 'custom-div-icon',
-              html: `<div style="background-color: #3b82f6; width: 16px; height: 16px; border-radius: 50%; border: 2.5px solid white; box-shadow: 0 0 12px #3b82f6; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 8px;">M</div>`,
-              iconSize: [16, 16]
-            });
+        // Dibujar ubicaciones en tiempo real de los cobradores (si el filtro es 'both' o 'collectors')
+        if (adminMapFilter === 'both' || adminMapFilter === 'collectors') {
+          cobradoresUbicaciones.forEach(c => {
+            if (c.lat && c.lng) {
+              const motoIcon = L.divIcon({
+                className: 'custom-div-icon',
+                html: `<div style="background-color: #3b82f6; width: 16px; height: 16px; border-radius: 50%; border: 2.5px solid white; box-shadow: 0 0 12px #3b82f6; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 8px;">M</div>`,
+                iconSize: [16, 16]
+              });
 
-            L.marker([c.lat, c.lng], { icon: motoIcon })
-              .addTo(map)
-              .bindPopup(`
-                <div style="font-family: 'Outfit', sans-serif; color: #111; min-width: 140px;">
-                  <h4 style="margin: 0 0 4px 0; font-size: 0.9rem; font-weight: 700; color: #3b82f6;">🛵 Cobrador Activo</h4>
-                  <p style="margin: 0 0 2px 0; font-size: 0.85rem; font-weight: 600;">${c.nombre}</p>
-                  <p style="margin: 0 0 2px 0; font-size: 0.75rem; color: #555;">${c.email}</p>
-                  <span style="font-size: 0.65rem; color: #94a3b8;">Último reporte: ${c.ultimaUbicacion ? c.ultimaUbicacion.split('T')[1]?.split('.')[0] || c.ultimaUbicacion : 'Reciente'}</span>
-                </div>
-              `);
-          }
-        });
+              L.marker([c.lat, c.lng], { icon: motoIcon })
+                .addTo(map)
+                .bindPopup(`
+                  <div style="font-family: 'Outfit', sans-serif; color: #111; min-width: 140px;">
+                    <h4 style="margin: 0 0 4px 0; font-size: 0.9rem; font-weight: 700; color: #3b82f6;">🛵 Cobrador Activo</h4>
+                    <p style="margin: 0 0 2px 0; font-size: 0.85rem; font-weight: 600;">${c.nombre}</p>
+                    <p style="margin: 0 0 2px 0; font-size: 0.75rem; color: #555;">${c.email}</p>
+                    <span style="font-size: 0.65rem; color: #94a3b8;">Último reporte: ${c.ultimaUbicacion ? c.ultimaUbicacion.split('T')[1]?.split('.')[0] || c.ultimaUbicacion : 'Reciente'}</span>
+                  </div>
+                `);
+            }
+          });
+        }
       } else {
         const myPayments = todayPayments.filter(p => p.cobrador === user?.nombre);
         myPayments.forEach(p => {
@@ -819,7 +825,7 @@ function App() {
         map.remove();
       };
     }
-  }, [activeTab, pagos, pendingCredits, token, user, clientes, cobradoresUbicaciones]);
+  }, [activeTab, pagos, pendingCredits, token, user, clientes, cobradoresUbicaciones, adminMapFilter]);
 
   // Amortization Calculations
   const calculateTotalAPagar = (monto: number, tasa: number) => {
@@ -1677,14 +1683,58 @@ function App() {
 
               {/* Right Column: Live GPS Coordinates Map */}
               <div className="panel">
-                <div className="panel-header">
+                <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                   <h2 className="panel-title">
                     <MapPin size={20} style={{ color: 'var(--color-danger)' }} />
                     Geolocalización en Vivo
                   </h2>
+                  {user?.rol === 'ADMIN' && (
+                    <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-card-hover)', padding: '2px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                      <button 
+                        type="button"
+                        onClick={() => setAdminMapFilter('both')}
+                        className={`btn-filter ${adminMapFilter === 'both' ? 'active' : ''}`}
+                        style={{
+                          background: adminMapFilter === 'both' ? 'var(--color-primary)' : 'transparent',
+                          color: adminMapFilter === 'both' ? 'white' : 'var(--text-secondary)',
+                          border: 'none', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s'
+                        }}
+                      >
+                        Ambos
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => setAdminMapFilter('clients')}
+                        className={`btn-filter ${adminMapFilter === 'clients' ? 'active' : ''}`}
+                        style={{
+                          background: adminMapFilter === 'clients' ? 'var(--color-primary)' : 'transparent',
+                          color: adminMapFilter === 'clients' ? 'white' : 'var(--text-secondary)',
+                          border: 'none', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s'
+                        }}
+                      >
+                        Clientes
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => setAdminMapFilter('collectors')}
+                        className={`btn-filter ${adminMapFilter === 'collectors' ? 'active' : ''}`}
+                        style={{
+                          background: adminMapFilter === 'collectors' ? 'var(--color-primary)' : 'transparent',
+                          color: adminMapFilter === 'collectors' ? 'white' : 'var(--text-secondary)',
+                          border: 'none', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s'
+                        }}
+                      >
+                        Cobradores
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div ref={mapContainerRef} className="map-element-container"></div>
+                  <div 
+                    ref={mapContainerRef} 
+                    className="map-element-container"
+                    style={{ height: user?.rol === 'COBRADOR' ? '200px' : '450px' }}
+                  ></div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
