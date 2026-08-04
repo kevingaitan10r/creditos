@@ -5,9 +5,66 @@ import { authenticateToken, AuthRequest, requireRole } from '../middleware/auth'
 
 const router = Router();
 
-// Todos los endpoints de usuarios requieren rol de ADMIN
 router.use(authenticateToken);
+
+// POST /api/usuarios/ubicacion - Actualizar la ubicación actual del usuario en sesión
+router.post('/ubicacion', async (req: AuthRequest, res: Response) => {
+  const { lat, lng } = req.body;
+  const id_usuario = req.user?.id_usuario;
+
+  if (lat === undefined || lng === undefined) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Las coordenadas lat y lng son obligatorias.'
+    });
+  }
+
+  try {
+    await pool.query(
+      `UPDATE usuarios 
+       SET latitud_actual = $1, longitud_actual = $2, ultima_ubicacion = CURRENT_TIMESTAMP 
+       WHERE id_usuario = $3`,
+      [lat, lng, id_usuario]
+    );
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Ubicación actualizada correctamente.'
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Error al actualizar la ubicación.',
+      error: error.message
+    });
+  }
+});
+
+// A partir de aquí, todos los endpoints requieren rol de ADMIN
 router.use(requireRole(['ADMIN']));
+
+// GET /api/usuarios/ubicaciones - Obtener ubicaciones de todos los cobradores activos (Solo ADMIN)
+router.get('/ubicaciones', async (req: AuthRequest, res: Response) => {
+  try {
+    const result = await pool.query(
+      `SELECT id_usuario as id, nombre, email, latitud_actual as lat, longitud_actual as lng, 
+              ultima_ubicacion::text as "ultimaUbicacion"
+       FROM usuarios 
+       WHERE rol = 'COBRADOR' AND latitud_actual IS NOT NULL
+       ORDER BY nombre ASC`
+    );
+    res.status(200).json({
+      status: 'success',
+      data: result.rows
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Error al obtener las ubicaciones de los cobradores.',
+      error: error.message
+    });
+  }
+});
 
 // GET /api/usuarios - Obtener todos los usuarios del sistema
 router.get('/', async (req: AuthRequest, res: Response) => {

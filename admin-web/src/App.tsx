@@ -73,6 +73,7 @@ function App() {
   const [liquidaciones, setLiquidaciones] = useState<any[]>([]);
   const [usuariosList, setUsuariosList] = useState<any[]>([]);
   const [cobradoresList, setCobradoresList] = useState<any[]>([]);
+  const [cobradoresUbicaciones, setCobradoresUbicaciones] = useState<any[]>([]);
 
   // Editing States (Exclusivos para ADMIN)
   const [editingClient, setEditingClient] = useState<any | null>(null);
@@ -459,6 +460,67 @@ function App() {
     }
   }, [activeTab, token]);
 
+  // Enviar ubicación en tiempo real si es COBRADOR
+  useEffect(() => {
+    if (token && user?.rol === 'COBRADOR') {
+      const enviarUbicacion = () => {
+        if (!navigator.geolocation) return;
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            try {
+              await fetch(`${API_URL}/usuarios/ubicacion`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                  lat: position.coords.latitude,
+                  lng: position.coords.longitude
+                })
+              });
+            } catch (error) {
+              console.error("Error al enviar la ubicación:", error);
+            }
+          },
+          (error) => {
+            console.error("Error al obtener geolocalización:", error);
+          },
+          { enableHighAccuracy: true }
+        );
+      };
+
+      enviarUbicacion();
+      const interval = setInterval(enviarUbicacion, 30000); // Reportar cada 30 segundos
+      return () => clearInterval(interval);
+    }
+  }, [token, user]);
+
+  // Consultar ubicaciones de cobradores en tiempo real si es ADMIN
+  useEffect(() => {
+    if (token && user?.rol === 'ADMIN' && activeTab === 'dashboard') {
+      const obtenerUbicaciones = async () => {
+        try {
+          const response = await fetch(`${API_URL}/usuarios/ubicaciones`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          const result = await response.json();
+          if (result.status === 'success') {
+            setCobradoresUbicaciones(result.data);
+          }
+        } catch (error) {
+          console.error("Error al obtener ubicaciones de cobradores:", error);
+        }
+      };
+
+      obtenerUbicaciones();
+      const interval = setInterval(obtenerUbicaciones, 15000); // Polling cada 15 segundos
+      return () => clearInterval(interval);
+    }
+  }, [token, user, activeTab]);
+
   // Lógica de Ruta del Cobrador y Siguiente Cliente
   const cobradorRoute = rutas.find(r => r.cobradorId === user?.id_usuario || r.cobrador === user?.nombre);
   const routeClients = clientes.filter(c => c.rutaId === cobradorRoute?.id || c.rutaNombre === cobradorRoute?.nombre_ruta);
@@ -690,6 +752,28 @@ function App() {
               `);
           }
         });
+
+        // Dibujar ubicaciones en tiempo real de los cobradores
+        cobradoresUbicaciones.forEach(c => {
+          if (c.lat && c.lng) {
+            const motoIcon = L.divIcon({
+              className: 'custom-div-icon',
+              html: `<div style="background-color: #3b82f6; width: 16px; height: 16px; border-radius: 50%; border: 2.5px solid white; box-shadow: 0 0 12px #3b82f6; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 8px;">M</div>`,
+              iconSize: [16, 16]
+            });
+
+            L.marker([c.lat, c.lng], { icon: motoIcon })
+              .addTo(map)
+              .bindPopup(`
+                <div style="font-family: 'Outfit', sans-serif; color: #111; min-width: 140px;">
+                  <h4 style="margin: 0 0 4px 0; font-size: 0.9rem; font-weight: 700; color: #3b82f6;">🛵 Cobrador Activo</h4>
+                  <p style="margin: 0 0 2px 0; font-size: 0.85rem; font-weight: 600;">${c.nombre}</p>
+                  <p style="margin: 0 0 2px 0; font-size: 0.75rem; color: #555;">${c.email}</p>
+                  <span style="font-size: 0.65rem; color: #94a3b8;">Último reporte: ${c.ultimaUbicacion ? c.ultimaUbicacion.split('T')[1]?.split('.')[0] || c.ultimaUbicacion : 'Reciente'}</span>
+                </div>
+              `);
+          }
+        });
       } else {
         const myPayments = todayPayments.filter(p => p.cobrador === user?.nombre);
         myPayments.forEach(p => {
@@ -735,7 +819,7 @@ function App() {
         map.remove();
       };
     }
-  }, [activeTab, pagos, pendingCredits, token, user, clientes]);
+  }, [activeTab, pagos, pendingCredits, token, user, clientes, cobradoresUbicaciones]);
 
   // Amortization Calculations
   const calculateTotalAPagar = (monto: number, tasa: number) => {
