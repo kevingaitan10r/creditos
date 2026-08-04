@@ -4,13 +4,22 @@ import dotenv from 'dotenv';
 // Load environment variables
 dotenv.config();
 
-const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5432', 10),
-  user: process.env.DB_USER || 'zenu_admin',
-  password: process.env.DB_PASSWORD || 'zenu_secure_pass',
-  database: process.env.DB_NAME || 'zenu_db',
-});
+const poolConfig = process.env.DATABASE_URL
+  ? {
+      connectionString: process.env.DATABASE_URL,
+      ssl: {
+        rejectUnauthorized: false, // Required for serverless databases like Neon
+      },
+    }
+  : {
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT || '5432', 10),
+      user: process.env.DB_USER || 'zenu_admin',
+      password: process.env.DB_PASSWORD || 'zenu_secure_pass',
+      database: process.env.DB_NAME || 'zenu_db',
+    };
+
+const pool = new Pool(poolConfig);
 
 pool.on('connect', () => {
   console.log('Conexión con PostgreSQL establecida con éxito.');
