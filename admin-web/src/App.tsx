@@ -98,6 +98,8 @@ function App() {
   const [newGasto, setNewGasto] = useState({ descripcion: '', monto: '' });
   const [newPayment, setNewPayment] = useState({ creditoId: '', monto: '', tipo: 'EFECTIVO', lat: '', lng: '' });
   const [newUser, setNewUser] = useState({ nombre: '', email: '', password: '', rol: 'COBRADOR' });
+  const [newRoute, setNewRoute] = useState({ nombre_ruta: '', id_cobrador: '' });
+  const [editingRoute, setEditingRoute] = useState<{ id: number; nombre_ruta: string; id_cobrador: string | number | null } | null>(null);
 
   // Receipt POS modal states
   const [showReceiptModal, setShowReceiptModal] = useState(false);
@@ -981,25 +983,74 @@ function App() {
     }
   };
 
-  const handleAssignRoute = async (e: React.FormEvent) => {
+
+
+  const handleCreateRoute = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!routeAssignment.rutaId || !routeAssignment.cobradorId) return;
+    if (!newRoute.nombre_ruta) return alert('El nombre de la ruta es obligatorio.');
     try {
-      const res = await fetchWithAuth(`${API_URL}/rutas/asignar`, {
+      const res = await fetchWithAuth(`${API_URL}/rutas`, {
         method: 'POST',
         body: JSON.stringify({
-          rutaId: Number(routeAssignment.rutaId),
-          cobradorId: Number(routeAssignment.cobradorId)
+          nombre_ruta: newRoute.nombre_ruta,
+          id_cobrador: newRoute.id_cobrador ? Number(newRoute.id_cobrador) : null
         })
       });
       if (res.ok) {
+        alert('Ruta creada exitosamente.');
+        setNewRoute({ nombre_ruta: '', id_cobrador: '' });
         loadAppData();
       } else {
-        const data = await res.json();
-        alert(data.message || 'Error al asignar cobrador.');
+        const data = res.headers.get('content-type')?.includes('application/json') ? await res.json() : null;
+        alert(data?.message || 'Error al crear la ruta.');
       }
     } catch (error) {
       console.error(error);
+      alert('Error de conexión.');
+    }
+  };
+
+  const handleUpdateRoute = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingRoute || !editingRoute.nombre_ruta) return alert('El nombre de la ruta es obligatorio.');
+    try {
+      const res = await fetchWithAuth(`${API_URL}/rutas/${editingRoute.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          nombre_ruta: editingRoute.nombre_ruta,
+          id_cobrador: editingRoute.id_cobrador ? Number(editingRoute.id_cobrador) : null
+        })
+      });
+      if (res.ok) {
+        alert('Ruta actualizada exitosamente.');
+        setEditingRoute(null);
+        loadAppData();
+      } else {
+        const data = res.headers.get('content-type')?.includes('application/json') ? await res.json() : null;
+        alert(data?.message || 'Error al actualizar la ruta.');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Error de conexión.');
+    }
+  };
+
+  const handleDeleteRoute = async (id: number) => {
+    if (!confirm('¿Estás seguro de que deseas eliminar esta ruta?')) return;
+    try {
+      const res = await fetchWithAuth(`${API_URL}/rutas/${id}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        alert('Ruta eliminada exitosamente.');
+        loadAppData();
+      } else {
+        const data = res.headers.get('content-type')?.includes('application/json') ? await res.json() : null;
+        alert(data?.message || 'Error al eliminar la ruta.');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Error de conexión.');
     }
   };
 
@@ -1803,81 +1854,131 @@ function App() {
               ← Volver a Ajustes
             </button>
             <div className="section-container" style={{ gridTemplateColumns: '1fr 2fr' }}>
-            <div className="panel">
-              <div className="panel-header">
-                <h2 className="panel-title">Asignar Cobrador</h2>
-              </div>
-              <form onSubmit={handleAssignRoute}>
-                <div className="form-group">
-                  <label htmlFor="rutaSelect">Seleccionar Ruta</label>
-                  <select
-                    id="rutaSelect"
-                    className="form-control"
-                    value={routeAssignment.rutaId}
-                    onChange={(e) => setRouteAssignment({ ...routeAssignment, rutaId: e.target.value })}
-                  >
-                    {rutas.map(r => (
-                      <option key={r.id} value={r.id}>{r.nombre_ruta}</option>
-                    ))}
-                  </select>
+              <div className="panel">
+                <div className="panel-header">
+                  <h2 className="panel-title">
+                    {editingRoute ? 'Editar Ruta' : 'Nueva Ruta'}
+                  </h2>
+                  {editingRoute && (
+                    <button 
+                      type="button" 
+                      className="btn btn-secondary btn-sm" 
+                      onClick={() => setEditingRoute(null)}
+                      style={{ padding: '4px 8px', fontSize: '0.75rem' }}
+                    >
+                      Cancelar
+                    </button>
+                  )}
                 </div>
+                <form onSubmit={editingRoute ? handleUpdateRoute : handleCreateRoute}>
+                  <div className="form-group">
+                    <label htmlFor="routeNameInput">Nombre de la Ruta</label>
+                    <input
+                      id="routeNameInput"
+                      type="text"
+                      className="form-control"
+                      placeholder="Ej. Ruta Sur - El Recreo"
+                      value={editingRoute ? editingRoute.nombre_ruta : newRoute.nombre_ruta}
+                      onChange={(e) => {
+                        if (editingRoute) {
+                          setEditingRoute({ ...editingRoute, nombre_ruta: e.target.value });
+                        } else {
+                          setNewRoute({ ...newRoute, nombre_ruta: e.target.value });
+                        }
+                      }}
+                      required
+                    />
+                  </div>
 
-                <div className="form-group">
-                  <label htmlFor="cobradorSelect">Seleccionar Cobrador</label>
-                  <select
-                    id="cobradorSelect"
-                    className="form-control"
-                    value={routeAssignment.cobradorId}
-                    onChange={(e) => setRouteAssignment({ ...routeAssignment, cobradorId: e.target.value })}
-                  >
-                    {cobradoresList.map(c => (
-                      <option key={c.id} value={c.id}>{c.nombre}</option>
-                    ))}
-                  </select>
-                </div>
+                  <div className="form-group">
+                    <label htmlFor="routeCobradorSelect">Cobrador Asignado</label>
+                    <select
+                      id="routeCobradorSelect"
+                      className="form-control"
+                      value={editingRoute ? (editingRoute.id_cobrador || '') : newRoute.id_cobrador}
+                      onChange={(e) => {
+                        if (editingRoute) {
+                          setEditingRoute({ ...editingRoute, id_cobrador: e.target.value ? Number(e.target.value) : null });
+                        } else {
+                          setNewRoute({ ...newRoute, id_cobrador: e.target.value });
+                        }
+                      }}
+                    >
+                      <option value="">Sin Asignar</option>
+                      {cobradoresList.map(c => (
+                        <option key={c.id} value={c.id}>{c.nombre}</option>
+                      ))}
+                    </select>
+                  </div>
 
-                <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '12px' }}>
-                  <UserCheck size={18} /> Asignar Cobrador
-                </button>
-              </form>
-            </div>
-
-            <div className="panel">
-              <div className="panel-header">
-                <h2 className="panel-title">Rutas Registradas</h2>
+                  <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '12px' }}>
+                    {editingRoute ? 'Guardar Cambios' : 'Crear Ruta'}
+                  </button>
+                </form>
               </div>
-              <div className="table-wrapper">
-                <table className="custom-table">
-                  <thead>
-                    <tr>
-                      <th>Ruta</th>
-                      <th>Cobrador</th>
-                      <th>Recaudado</th>
-                      <th>Esperado</th>
-                      <th>Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rutas.map(r => (
-                      <tr key={r.id}>
-                        <td data-label="Ruta" style={{ fontWeight: 600 }}>{r.nombre_ruta}</td>
-                        <td data-label="Cobrador">{r.cobrador}</td>
-                        <td data-label="Recaudado Hoy" style={{ color: 'var(--color-success)' }}>${r.recaudado.toLocaleString()}</td>
-                        <td data-label="Esperado Diario">${r.totalEsperado.toLocaleString()}</td>
-                        <td data-label="Estado">
-                          <span className={`badge ${r.cobradorId ? 'badge-success' : 'badge-warning'}`}>
-                            {r.cobradorId ? 'Activa' : 'Sin Cobrador'}
-                          </span>
-                        </td>
+
+              <div className="panel">
+                <div className="panel-header">
+                  <h2 className="panel-title">Rutas Registradas</h2>
+                </div>
+                <div className="table-wrapper">
+                  <table className="custom-table">
+                    <thead>
+                      <tr>
+                        <th>Ruta</th>
+                        <th>Cobrador</th>
+                        <th>Recaudado</th>
+                        <th>Esperado</th>
+                        <th>Estado</th>
+                        <th style={{ textAlign: 'center' }}>Acciones</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {rutas.map(r => (
+                        <tr key={r.id}>
+                          <td data-label="Ruta" style={{ fontWeight: 600 }}>{r.nombre_ruta}</td>
+                          <td data-label="Cobrador">{r.cobrador}</td>
+                          <td data-label="Recaudado Hoy" style={{ color: 'var(--color-success)' }}>${r.recaudado.toLocaleString()}</td>
+                          <td data-label="Esperado Diario">${r.totalEsperado.toLocaleString()}</td>
+                          <td data-label="Estado">
+                            <span className={`badge ${r.cobradorId ? 'badge-success' : 'badge-warning'}`}>
+                              {r.cobradorId ? 'Activa' : 'Sin Cobrador'}
+                            </span>
+                          </td>
+                          <td data-label="Acciones" style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                            <button
+                              type="button"
+                              className="btn btn-secondary btn-sm"
+                              style={{ padding: '4px 8px', fontSize: '0.75rem', fontWeight: 600 }}
+                              onClick={() => setEditingRoute({ id: r.id, nombre_ruta: r.nombre_ruta, id_cobrador: r.cobradorId })}
+                            >
+                              ✏️ Editar
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-secondary btn-sm"
+                              style={{ padding: '4px 8px', fontSize: '0.75rem', borderColor: 'var(--color-danger)', color: 'var(--color-danger)', fontWeight: 600 }}
+                              onClick={() => handleDeleteRoute(r.id)}
+                            >
+                              🗑️ Eliminar
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {rutas.length === 0 && (
+                        <tr>
+                          <td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+                            No hay rutas registradas.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
-          </div>
-        </>
-      )}
+          </>
+        )}
 
         {activeTab === 'usuarios' && user?.rol === 'ADMIN' && (
           <>

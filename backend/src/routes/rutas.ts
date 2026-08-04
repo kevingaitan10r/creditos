@@ -141,4 +141,93 @@ router.post('/asignar', authenticateToken, requireRole(['ADMIN']), async (req: A
   }
 });
 
+// PUT /api/rutas/:id (Solo ADMIN)
+router.put('/:id', authenticateToken, requireRole(['ADMIN']), async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  const { nombre_ruta, id_cobrador } = req.body;
+
+  if (!nombre_ruta) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'El nombre de la ruta es obligatorio.'
+    });
+  }
+
+  try {
+    // Validar cobrador si se proporciona
+    if (id_cobrador) {
+      const userCheck = await pool.query('SELECT rol FROM usuarios WHERE id_usuario = $1', [id_cobrador]);
+      if (userCheck.rows.length === 0 || userCheck.rows[0].rol !== 'COBRADOR') {
+        return res.status(400).json({
+          status: 'error',
+          message: 'El usuario asignado debe ser un COBRADOR.'
+        });
+      }
+    }
+
+    const result = await pool.query(
+      `UPDATE rutas 
+       SET nombre_ruta = $1, id_cobrador = $2 
+       WHERE id_ruta = $3 
+       RETURNING id_ruta as id, nombre_ruta, id_cobrador as "cobradorId"`,
+      [nombre_ruta, id_cobrador || null, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Ruta no encontrada.'
+      });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Ruta actualizada exitosamente.',
+      data: result.rows[0]
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Error al actualizar la ruta.',
+      error: error.message
+    });
+  }
+});
+
+// DELETE /api/rutas/:id (Solo ADMIN)
+router.delete('/:id', authenticateToken, requireRole(['ADMIN']), async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    // Verificar si hay clientes en esta ruta antes de borrarla
+    const clientsCheck = await pool.query('SELECT id_cliente FROM clientes WHERE id_ruta = $1 LIMIT 1', [id]);
+    if (clientsCheck.rows.length > 0) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'No se puede eliminar la ruta porque tiene clientes asociados. Reasigna los clientes a otra ruta primero.'
+      });
+    }
+
+    const result = await pool.query('DELETE FROM rutas WHERE id_ruta = $1 RETURNING *', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Ruta no encontrada.'
+      });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Ruta eliminada exitosamente.',
+      data: { id: Number(id) }
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Error al eliminar la ruta.',
+      error: error.message
+    });
+  }
+});
+
 export default router;
