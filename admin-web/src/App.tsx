@@ -1743,11 +1743,27 @@ function App() {
                     {user?.rol === 'ADMIN' ? (
                       pagos.filter(p => p.lat && p.lng).slice(0, 3).map(p => (
                         <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)' }}>
-                          <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <span style={{ fontWeight: 600, color: '#fff' }}>{p.clienteNombre}</span>
-                            <span style={{ color: 'var(--text-muted)' }}>{p.fecha.split('T')[0]}</span>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{p.clienteNombre}</span>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                              Dir: {clientes.find(c => c.nombre === p.clienteNombre)?.direccion || 'No disponible'}
+                            </span>
+                            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{p.fecha.split('T')[0] || p.fecha}</span>
                           </div>
-                          <span style={{ fontFamily: 'monospace', color: 'var(--color-success)' }}>{p.lat.toFixed(4)}, {p.lng.toFixed(4)}</span>
+                          <a 
+                            href={`https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-secondary btn-sm"
+                            style={{ 
+                              fontSize: '0.75rem', padding: '4px 8px', borderRadius: '6px', 
+                              textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px',
+                              background: 'rgba(99, 102, 241, 0.1)', color: 'var(--color-primary)', border: '1px solid rgba(99, 102, 241, 0.2)',
+                              fontWeight: 600
+                            }}
+                          >
+                            📍 Cómo llegar
+                          </a>
                         </div>
                       ))
                     ) : (

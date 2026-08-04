@@ -1374,6 +1374,20 @@ body.light-theme {
   --shadow-premium: 0 10px 30px -10px rgba(15, 23, 42, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
+body.light-theme .user-name {
+  color: var(--text-primary);
+}
+
+body.light-theme .user-role {
+  color: var(--text-muted);
+}
+
+body.light-theme .badge-neutral {
+  background-color: rgba(15, 23, 42, 0.05);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
 body.light-theme::before {
   background: radial-gradient(circle, rgba(99, 102, 241, 0.04) 0%, transparent 70%);
 }
