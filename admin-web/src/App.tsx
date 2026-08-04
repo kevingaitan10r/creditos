@@ -1952,7 +1952,7 @@ function App() {
                               style={{ padding: '4px 8px', fontSize: '0.75rem', fontWeight: 600 }}
                               onClick={() => setEditingRoute({ id: r.id, nombre_ruta: r.nombre_ruta, id_cobrador: r.cobradorId })}
                             >
-                              ✏️ Editar
+                              Editar
                             </button>
                             <button
                               type="button"
@@ -1960,7 +1960,7 @@ function App() {
                               style={{ padding: '4px 8px', fontSize: '0.75rem', borderColor: 'var(--color-danger)', color: 'var(--color-danger)', fontWeight: 600 }}
                               onClick={() => handleDeleteRoute(r.id)}
                             >
-                              🗑️ Eliminar
+                              Eliminar
                             </button>
                           </td>
                         </tr>
