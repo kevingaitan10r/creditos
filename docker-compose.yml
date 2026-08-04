@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: zenu-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: zenu_admin
+      POSTGRES_PASSWORD: zenu_secure_pass
+      POSTGRES_DB: zenu_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Mount the initialization scripts to run them automatically on database startup
+      - ./backend/src/database/init.sql:/docker-entrypoint-initdb.d/1-init.sql
+      - ./backend/src/database/seed.sql:/docker-entrypoint-initdb.d/2-seed.sql
+
+volumes:
+  postgres_data:
+    driver: local

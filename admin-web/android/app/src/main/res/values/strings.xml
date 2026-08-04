@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Zenu Credits</string>
+    <string name="title_activity_main">Zenu Credits</string>
+    <string name="package_name">com.zenu.credits</string>
+    <string name="custom_url_scheme">com.zenu.credits</string>
+</resources>
