@@ -27,6 +27,11 @@ import './App.css';
 // - Para el Emulador de Android, usa 'http://10.0.2.2:5000/api' para conectarse al servidor de la PC.
 // - Para un dispositivo físico, cambia '10.0.2.2' por la dirección IP local de tu PC (ej: 'http://192.168.1.50:5000/api').
 const getApiUrl = () => {
+  // If an environment variable is defined (e.g., in Vercel for production)
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+
   const win = window as any;
   const isNative = win.Capacitor && typeof win.Capacitor.isNativePlatform === 'function' && win.Capacitor.isNativePlatform();
   if (isNative) {
