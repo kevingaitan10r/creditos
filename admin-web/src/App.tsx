@@ -1456,7 +1456,7 @@ function App() {
       <div className="mobile-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div className="logo-icon shadow-glow-emerald" style={{ width: '32px', height: '32px', fontSize: '1rem', borderRadius: '6px' }}>Z</div>
-          <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.3px', color: 'white' }}>ZENU</span>
+          <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.3px', color: 'var(--text-primary)' }}>ZENU</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {user?.rol === 'ADMIN' && creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length > 0 && (
@@ -1493,7 +1493,7 @@ function App() {
         <div className="top-navbar-brand" onClick={() => setActiveTab('dashboard')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div className="logo-icon shadow-glow-emerald" style={{ width: '36px', height: '36px', fontSize: '1.1rem', borderRadius: '8px' }}>Z</div>
           <div className="logo-text">
-            <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.3px', color: 'white' }}>ZENU</span>
+            <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.3px', color: 'var(--text-primary)' }}>ZENU</span>
             <span style={{ fontSize: '0.6rem', display: 'block', color: 'var(--color-primary)', fontWeight: 700, letterSpacing: '1px', marginTop: '-4px' }}>FINTECH PRO</span>
           </div>
         </div>
@@ -1579,35 +1579,38 @@ function App() {
                   top: '100%',
                   left: 0,
                   marginTop: '6px',
-                  width: '190px',
-                  background: 'rgba(15, 23, 42, 0.95)',
+                  width: '200px',
+                  background: 'var(--bg-card)',
                   backdropFilter: 'blur(16px)',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  border: '1px solid var(--border-color)',
                   borderRadius: '14px',
                   padding: '6px',
-                  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.8)',
-                  zIndex: 100,
+                  boxShadow: 'var(--shadow-premium)',
+                  zIndex: 1000,
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '4px'
                 }}>
                   <button
+                    type="button"
                     onClick={() => { setActiveTab('rutas'); setShowAdminSubmenu(false); }}
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'transparent', border: 'none', color: 'white', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'transparent', border: 'none', color: 'var(--text-primary)', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
                   >
                     <MapPin size={14} style={{ color: '#f59e0b' }} />
                     <span>Gestión de Rutas</span>
                   </button>
                   <button
+                    type="button"
                     onClick={() => { setActiveTab('usuarios'); setShowAdminSubmenu(false); }}
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'transparent', border: 'none', color: 'white', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'transparent', border: 'none', color: 'var(--text-primary)', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
                   >
                     <Users size={14} style={{ color: '#38bdf8' }} />
                     <span>Gestión de Usuarios</span>
                   </button>
                   <button
+                    type="button"
                     onClick={() => { setActiveTab('liquidaciones'); setShowAdminSubmenu(false); }}
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'transparent', border: 'none', color: 'white', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'transparent', border: 'none', color: 'var(--text-primary)', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
                   >
                     <CheckCircle2 size={14} style={{ color: '#10b981' }} />
                     <span>Liquidación Diario</span>
@@ -1635,83 +1638,76 @@ function App() {
             </div>
           )}
 
-          {/* Categoría Consolidada: Operaciones Rápidas */}
-          <div style={{ position: 'relative' }}>
-            <button 
-              type="button"
-              className="btn btn-primary btn-sm"
-              onClick={() => setShowQuickActionsMenu(!showQuickActionsMenu)}
-              style={{ 
-                background: 'linear-gradient(135deg, #10b981, #059669)',
-                borderColor: '#10b981',
-                color: 'white',
-                fontWeight: 700,
-                fontSize: '0.8rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                boxShadow: '0 0 12px rgba(16, 185, 129, 0.35)',
-                padding: '6px 12px',
-                borderRadius: '10px'
-              }}
-            >
-              <span>⚡ Nueva Operación</span>
-              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
-                {showQuickActionsMenu ? 'expand_less' : 'expand_more'}
-              </span>
-            </button>
+          {/* Categoría Consolidada: Operaciones Rápidas (Solo vista para Cobrador) */}
+          {user?.rol === 'COBRADOR' && (
+            <div style={{ position: 'relative' }}>
+              <button 
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={() => setShowQuickActionsMenu(!showQuickActionsMenu)}
+                style={{ 
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  borderColor: '#10b981',
+                  color: 'white',
+                  fontWeight: 700,
+                  fontSize: '0.8rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  boxShadow: '0 0 12px rgba(16, 185, 129, 0.35)',
+                  padding: '6px 12px',
+                  borderRadius: '10px'
+                }}
+              >
+                <span>⚡ Nueva Operación</span>
+                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+                  {showQuickActionsMenu ? 'expand_less' : 'expand_more'}
+                </span>
+              </button>
 
-            {showQuickActionsMenu && (
-              <div style={{
-                position: 'absolute',
-                top: '100%',
-                right: 0,
-                marginTop: '6px',
-                width: '210px',
-                background: 'rgba(15, 23, 42, 0.95)',
-                backdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
-                borderRadius: '14px',
-                padding: '6px',
-                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.8)',
-                zIndex: 100,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '4px'
-              }}>
-                <button
-                  onClick={() => { setActiveTab('creditos'); setShowQuickActionsMenu(false); }}
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '8px 10px', background: 'transparent', border: 'none', color: 'white', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
-                >
-                  <CreditCard size={14} style={{ color: '#10b981' }} />
-                  <span>Crear / Solicitar Crédito</span>
-                </button>
-                <button
-                  onClick={() => { setActiveTab('clientes'); setShowQuickActionsMenu(false); }}
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '8px 10px', background: 'transparent', border: 'none', color: 'white', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
-                >
-                  <Users size={14} style={{ color: '#38bdf8' }} />
-                  <span>Registrar Cliente</span>
-                </button>
-                <button
-                  onClick={() => { setActiveTab('gastos'); setShowQuickActionsMenu(false); }}
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '8px 10px', background: 'transparent', border: 'none', color: 'white', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
-                >
-                  <TrendingUp size={14} style={{ color: '#ef4444', transform: 'rotate(180deg)' }} />
-                  <span>Registrar Gasto Ruta</span>
-                </button>
-                {user?.rol === 'ADMIN' && (
+              {showQuickActionsMenu && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  right: 0,
+                  marginTop: '6px',
+                  width: '210px',
+                  background: 'var(--bg-card)',
+                  backdropFilter: 'blur(16px)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '14px',
+                  padding: '6px',
+                  boxShadow: 'var(--shadow-premium)',
+                  zIndex: 1000,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px'
+                }}>
                   <button
-                    onClick={() => { setActiveTab('rutas'); setShowQuickActionsMenu(false); }}
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '8px 10px', background: 'transparent', border: 'none', color: 'white', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
+                    onClick={() => { setActiveTab('creditos'); setShowQuickActionsMenu(false); }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '8px 10px', background: 'transparent', border: 'none', color: 'var(--text-primary)', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
                   >
-                    <MapPin size={14} style={{ color: '#f59e0b' }} />
-                    <span>Gestionar Rutas</span>
+                    <CreditCard size={14} style={{ color: '#10b981' }} />
+                    <span>Crear / Solicitar Crédito</span>
                   </button>
-                )}
-              </div>
-            )}
-          </div>
+                  <button
+                    onClick={() => { setActiveTab('clientes'); setShowQuickActionsMenu(false); }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '8px 10px', background: 'transparent', border: 'none', color: 'var(--text-primary)', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
+                  >
+                    <Users size={14} style={{ color: '#38bdf8' }} />
+                    <span>Registrar Cliente</span>
+                  </button>
+                  <button
+                    onClick={() => { setActiveTab('gastos'); setShowQuickActionsMenu(false); }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '8px 10px', background: 'transparent', border: 'none', color: 'var(--text-primary)', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
+                  >
+                    <TrendingUp size={14} style={{ color: '#ef4444', transform: 'rotate(180deg)' }} />
+                    <span>Registrar Gasto Ruta</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Perfil y Rol del Usuario (Ubicado en el extremo derecho) */}
           <div 
@@ -1721,10 +1717,10 @@ function App() {
               display: 'flex', 
               alignItems: 'center', 
               gap: '8px', 
-              background: 'rgba(255,255,255,0.06)', 
+              background: 'var(--bg-input)', 
               padding: '6px 14px', 
               borderRadius: '24px', 
-              border: '1px solid rgba(255,255,255,0.1)',
+              border: '1px solid var(--border-color)',
               cursor: 'pointer',
               transition: 'all 0.2s ease'
             }}
@@ -1734,11 +1730,11 @@ function App() {
               <div className="user-avatar" style={{ width: '26px', height: '26px', fontSize: '0.75rem', background: '#10b981', color: 'white', fontWeight: 800 }}>{user?.nombre.charAt(0).toUpperCase()}</div>
               <span 
                 className={`status-dot ${apiOnline ? 'online' : 'offline'}`} 
-                style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '8px', height: '8px', border: '2px solid #0b0f19' }} 
+                style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '8px', height: '8px', border: '2px solid var(--bg-main)' }} 
               />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
-              <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'white' }}>{user?.nombre}</span>
+              <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)' }}>{user?.nombre}</span>
               <span style={{ fontSize: '0.68rem', color: '#10b981', fontWeight: 600 }}>{user?.rol === 'ADMIN' ? 'Administrador' : 'Cobrador'}</span>
             </div>
           </div>
@@ -3069,7 +3065,7 @@ function App() {
 
         {activeTab === 'aprobaciones' && (
           <div className="section-container" style={{ flexDirection: 'column', gap: '20px' }}>
-            <div className="panel" style={{ background: 'rgba(15, 23, 42, 0.75)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+            <div className="panel" style={{ background: 'var(--bg-card)', border: '1px solid rgba(245, 158, 11, 0.35)' }}>
               <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
                 <h2 className="panel-title" style={{ color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.2rem' }}>
                   <span className="material-symbols-outlined" style={{ fontSize: '28px' }}>rule</span>
@@ -3083,14 +3079,14 @@ function App() {
               {creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-secondary)' }}>
                   <span className="material-symbols-outlined" style={{ fontSize: '56px', color: '#10b981', display: 'block', marginBottom: '12px' }}>verified</span>
-                  <h3 style={{ color: 'white', fontSize: '1.3rem', marginBottom: '6px', fontWeight: 700 }}>¡Todo al día!</h3>
+                  <h3 style={{ color: 'var(--text-primary)', fontSize: '1.3rem', marginBottom: '6px', fontWeight: 700 }}>¡Todo al día!</h3>
                   <p style={{ fontSize: '0.95rem' }}>No tienes solicitudes de préstamo pendientes por revisar en este momento.</p>
                 </div>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '20px', marginTop: '20px' }}>
                   {creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').map(c => (
                     <div key={c.id} style={{
-                      background: 'rgba(30, 41, 59, 0.7)',
+                      background: 'var(--bg-card-hover)',
                       border: '1px solid rgba(245, 158, 11, 0.35)',
                       borderRadius: '20px',
                       padding: '20px',
@@ -3098,13 +3094,13 @@ function App() {
                       flexDirection: 'column',
                       justifyContent: 'space-between',
                       gap: '16px',
-                      boxShadow: '0 10px 30px -5px rgba(0, 0, 0, 0.6)'
+                      boxShadow: 'var(--shadow-premium)'
                     }}>
                       <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                           <div>
                             <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#f59e0b', fontWeight: 700, letterSpacing: '0.5px' }}>Solicitud #{c.id}</span>
-                            <h4 style={{ color: 'white', fontSize: '1.2rem', fontWeight: 800, margin: '2px 0 0 0' }}>{c.clienteNombre}</h4>
+                            <h4 style={{ color: 'var(--text-primary)', fontSize: '1.2rem', fontWeight: 800, margin: '2px 0 0 0' }}>{c.clienteNombre}</h4>
                             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Documento: {c.documento || 'No especificado'}</span>
                           </div>
                           <span className="badge badge-warning" style={{ fontWeight: 700, fontSize: '0.75rem' }}>
@@ -3112,24 +3108,24 @@ function App() {
                           </span>
                         </div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.9rem', background: 'rgba(15, 23, 42, 0.85)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.9rem', background: 'var(--bg-input)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                             <span style={{ color: 'var(--text-secondary)' }}>Monto Solicitado:</span>
                             <strong style={{ color: '#10b981', fontSize: '1.1rem' }}>${c.monto.toLocaleString()} COP</strong>
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                             <span style={{ color: 'var(--text-secondary)' }}>Tasa Interés:</span>
-                            <strong style={{ color: 'white' }}>{c.interes}%</strong>
+                            <strong style={{ color: 'var(--text-primary)' }}>{c.interes}%</strong>
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                             <span style={{ color: 'var(--text-secondary)' }}>Total a Pagar:</span>
-                            <strong style={{ color: 'white' }}>${c.totalAPagar.toLocaleString()} COP</strong>
+                            <strong style={{ color: 'var(--text-primary)' }}>${c.totalAPagar.toLocaleString()} COP</strong>
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                             <span style={{ color: 'var(--text-secondary)' }}>Cuota ({c.frecuencia}):</span>
                             <strong style={{ color: '#f59e0b' }}>${c.valorCuota.toLocaleString()} COP</strong>
                           </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '6px', borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '6px', borderTop: '1px solid var(--border-color)' }}>
                             <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>Fecha Solicitud:</span>
                             <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>{c.fecha}</span>
                           </div>

@@ -178,8 +178,8 @@ body::after {
   align-items: center;
   gap: 3px;
   flex-wrap: nowrap;
-  overflow-x: auto;
-  scrollbar-width: none;
+  position: relative;
+  overflow: visible;
 }
 
 .top-navbar-menu::-webkit-scrollbar {
