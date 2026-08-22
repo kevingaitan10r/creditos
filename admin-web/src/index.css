@@ -1570,6 +1570,33 @@ body.light-theme .liquid-summary-box {
   background-color: rgba(0, 0, 0, 0.03) !important;
 }
 
+/* Menús Desplegables Sólidos (No traslúcidos) */
+.dropdown-menu-solid {
+  background-color: #0f172a !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6) !important;
+  opacity: 1 !important;
+}
+
+body.light-theme .dropdown-menu-solid {
+  background-color: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.15) !important;
+  box-shadow: 0 15px 35px rgba(15, 23, 42, 0.15) !important;
+}
+
+body.light-theme .dropdown-menu-solid button {
+  color: #0f172a !important;
+}
+
+body.light-theme .dropdown-menu-solid button:hover {
+  background-color: #f1f5f9 !important;
+}
+
+body.light-theme select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
 /* ==========================================================================
    ESTILOS DE CONFIGURACIÓN Y PERFIL
    ========================================================================== */

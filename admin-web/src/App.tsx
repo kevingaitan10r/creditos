@@ -1574,23 +1574,22 @@ function App() {
               </button>
 
               {showAdminSubmenu && (
-                <div style={{
-                  position: 'absolute',
-                  top: '100%',
-                  left: 0,
-                  marginTop: '6px',
-                  width: '200px',
-                  background: 'var(--bg-card)',
-                  backdropFilter: 'blur(16px)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '14px',
-                  padding: '6px',
-                  boxShadow: 'var(--shadow-premium)',
-                  zIndex: 1000,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '4px'
-                }}>
+                <div 
+                  className="dropdown-menu-solid"
+                  style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    marginTop: '6px',
+                    width: '200px',
+                    borderRadius: '14px',
+                    padding: '6px',
+                    zIndex: 1000,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px'
+                  }}
+                >
                   <button
                     type="button"
                     onClick={() => { setActiveTab('rutas'); setShowAdminSubmenu(false); }}
@@ -1666,23 +1665,22 @@ function App() {
               </button>
 
               {showQuickActionsMenu && (
-                <div style={{
-                  position: 'absolute',
-                  top: '100%',
-                  right: 0,
-                  marginTop: '6px',
-                  width: '210px',
-                  background: 'var(--bg-card)',
-                  backdropFilter: 'blur(16px)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '14px',
-                  padding: '6px',
-                  boxShadow: 'var(--shadow-premium)',
-                  zIndex: 1000,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '4px'
-                }}>
+                <div 
+                  className="dropdown-menu-solid"
+                  style={{
+                    position: 'absolute',
+                    top: '100%',
+                    right: 0,
+                    marginTop: '6px',
+                    width: '210px',
+                    borderRadius: '14px',
+                    padding: '6px',
+                    zIndex: 1000,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px'
+                  }}
+                >
                   <button
                     onClick={() => { setActiveTab('creditos'); setShowQuickActionsMenu(false); }}
                     style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '8px 10px', background: 'transparent', border: 'none', color: 'var(--text-primary)', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
@@ -1782,15 +1780,15 @@ function App() {
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
-                      background: 'rgba(15, 23, 42, 0.85)',
+                      background: 'var(--bg-input)',
                       padding: '12px 16px',
                       borderRadius: '12px',
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      border: '1px solid var(--border-color)',
                       flexWrap: 'wrap',
                       gap: '8px'
                     }}>
                       <div>
-                        <span style={{ fontWeight: 700, color: '#ffffff', fontSize: '0.95rem' }}>{c.clienteNombre}</span>
+                        <span style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem' }}>{c.clienteNombre}</span>
                         <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginLeft: '12px' }}>
                           Monto: <strong style={{ color: '#10b981' }}>${c.monto.toLocaleString()} COP</strong> • Cuota: ${c.valorCuota.toLocaleString()} ({c.frecuencia})
                         </span>
@@ -1936,7 +1934,17 @@ function App() {
                             className="form-control"
                             value={adminRouteFilter}
                             onChange={(e) => setAdminRouteFilter(e.target.value)}
-                            style={{ padding: '4px 8px', fontSize: '0.78rem', height: 'auto', background: 'rgba(15, 23, 42, 0.8)', borderColor: 'rgba(255, 255, 255, 0.12)' }}
+                            style={{ 
+                              padding: '6px 12px', 
+                              fontSize: '0.78rem', 
+                              height: 'auto', 
+                              background: 'var(--bg-input)', 
+                              borderColor: 'var(--border-color)',
+                              color: 'var(--text-primary)',
+                              borderRadius: '20px',
+                              fontWeight: 600,
+                              cursor: 'pointer'
+                            }}
                           >
                             <option value="ALL">Todas las Rutas</option>
                             {rutas.map(r => (
