@@ -65,9 +65,14 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response) => {
     });
   }
 
-  // Determinar quién registra el cobro
-  let finalCobradorId = cobradorId || (req.user ? req.user.id_usuario : null);
-  
+  // Determinar quién registra el cobro (Prevenir IDOR: Solo ADMIN puede asignar otro cobradorId)
+  const userRole = req.user?.rol;
+  let finalCobradorId = req.user?.id_usuario;
+
+  if (userRole === 'ADMIN' && cobradorId) {
+    finalCobradorId = Number(cobradorId);
+  }
+
   if (!finalCobradorId) {
     return res.status(400).json({
       status: 'error',

@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_zenu_token_key_123';
+import { JWT_SECRET } from '../config/env';
 
 export interface AuthRequest extends Request {
   user?: {

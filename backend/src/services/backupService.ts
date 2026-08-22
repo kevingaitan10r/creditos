@@ -148,12 +148,25 @@ export const generarYEnviarRespaldo = async () => {
   }
 };
 
-// Inicializar el Cron Job para que corra todos los días a las 7:00 PM (19:00)
+import { actualizarEstadosCreditos } from '../config/db';
+
+// Inicializar el Cron Job para que corra respaldos a las 7:00 PM y recálculo de moras cada hora
 export const iniciarRespaldoScheduler = () => {
-  console.log('🗓️ [CRON JOB] Scheduler de copias de seguridad activado (Todos los días a las 19:00)');
+  console.log('🗓️ [CRON JOB] Scheduler de respaldos y recálculo de moras activado.');
   
+  // Enviar copia por correo a las 7:00 PM
   cron.schedule('0 19 * * *', async () => {
-    console.log('⏰ [CRON JOB] Son las 7:00 PM. Ejecutando envío automático de respaldo...');
+    console.log('⏰ [CRON JOB] Ejecutando envío automático de respaldo diario...');
     await generarYEnviarRespaldo();
+  });
+
+  // Actualizar moras y estados de créditos automáticamente cada hora
+  cron.schedule('0 * * * *', async () => {
+    try {
+      await actualizarEstadosCreditos();
+      console.log('⏰ [CRON JOB] Estados de cartera y mora actualizados correctamente.');
+    } catch (err) {
+      console.error('❌ [CRON JOB] Error al actualizar estados de cartera:', err);
+    }
   });
 };

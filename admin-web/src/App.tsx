@@ -8,18 +8,20 @@ import {
   AlertTriangle,
   CheckCircle2,
   RefreshCw,
-  PlusCircle,
   Clock,
   Compass,
   CreditCard,
   UserCheck,
-  Trash2,
   LogOut,
   Share2,
   Settings,
   X,
   FileDown
 } from 'lucide-react';
+import { PosReceiptModal } from './components/modals/PosReceiptModal';
+import { AprobacionesView } from './features/aprobaciones/AprobacionesView';
+import { GastosView } from './features/gastos/GastosView';
+import { RutasView } from './features/rutas/RutasView';
 import './App.css';
 
 // Configuración de la URL de la API. 
@@ -2290,140 +2292,18 @@ function App() {
         )}
 
         {activeTab === 'rutas' && user?.rol === 'ADMIN' && (
-          <>
-            <button 
-              type="button" 
-              className="btn btn-secondary btn-sm mobile-only" 
-              onClick={() => setActiveTab('configuraciones')}
-              style={{ marginBottom: '15px' }}
-            >
-              ← Volver a Ajustes
-            </button>
-            <div className="section-container layout-crud">
-              <div className="panel">
-                <div className="panel-header">
-                  <h2 className="panel-title">
-                    {editingRoute ? 'Editar Ruta' : 'Nueva Ruta'}
-                  </h2>
-                  {editingRoute && (
-                    <button 
-                      type="button" 
-                      className="btn btn-secondary btn-sm" 
-                      onClick={() => setEditingRoute(null)}
-                      style={{ padding: '4px 8px', fontSize: '0.75rem' }}
-                    >
-                      Cancelar
-                    </button>
-                  )}
-                </div>
-                <form onSubmit={editingRoute ? handleUpdateRoute : handleCreateRoute}>
-                  <div className="form-group">
-                    <label htmlFor="routeNameInput">Nombre de la Ruta</label>
-                    <input
-                      id="routeNameInput"
-                      type="text"
-                      className="form-control"
-                      placeholder="Ej. Ruta Sur - El Recreo"
-                      value={editingRoute ? editingRoute.nombre_ruta : newRoute.nombre_ruta}
-                      onChange={(e) => {
-                        if (editingRoute) {
-                          setEditingRoute({ ...editingRoute, nombre_ruta: e.target.value });
-                        } else {
-                          setNewRoute({ ...newRoute, nombre_ruta: e.target.value });
-                        }
-                      }}
-                      required
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="routeCobradorSelect">Cobrador Asignado</label>
-                    <select
-                      id="routeCobradorSelect"
-                      className="form-control"
-                      value={editingRoute ? (editingRoute.id_cobrador || '') : newRoute.id_cobrador}
-                      onChange={(e) => {
-                        if (editingRoute) {
-                          setEditingRoute({ ...editingRoute, id_cobrador: e.target.value ? Number(e.target.value) : null });
-                        } else {
-                          setNewRoute({ ...newRoute, id_cobrador: e.target.value });
-                        }
-                      }}
-                    >
-                      <option value="">Sin Asignar</option>
-                      {cobradoresList.map(c => (
-                        <option key={c.id} value={c.id}>{c.nombre}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '12px' }}>
-                    {editingRoute ? 'Guardar Cambios' : 'Crear Ruta'}
-                  </button>
-                </form>
-              </div>
-
-              <div className="panel">
-                <div className="panel-header">
-                  <h2 className="panel-title">Rutas Registradas</h2>
-                </div>
-                <div className="table-wrapper">
-                  <table className="custom-table">
-                    <thead>
-                      <tr>
-                        <th>Ruta</th>
-                        <th>Cobrador</th>
-                        <th>Recaudado</th>
-                        <th>Esperado</th>
-                        <th>Estado</th>
-                        <th style={{ textAlign: 'center' }}>Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {rutas.map(r => (
-                        <tr key={r.id}>
-                          <td data-label="Ruta" style={{ fontWeight: 600 }}>{r.nombre_ruta}</td>
-                          <td data-label="Cobrador">{r.cobrador}</td>
-                          <td data-label="Recaudado Hoy" style={{ color: 'var(--color-success)' }}>${r.recaudado.toLocaleString()}</td>
-                          <td data-label="Esperado Diario">${r.totalEsperado.toLocaleString()}</td>
-                          <td data-label="Estado">
-                            <span className={`badge ${r.cobradorId ? 'badge-success' : 'badge-warning'}`}>
-                              {r.cobradorId ? 'Activa' : 'Sin Cobrador'}
-                            </span>
-                          </td>
-                          <td data-label="Acciones" style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                            <button
-                              type="button"
-                              className="btn btn-secondary btn-sm"
-                              style={{ padding: '4px 8px', fontSize: '0.75rem', fontWeight: 600 }}
-                              onClick={() => setEditingRoute({ id: r.id, nombre_ruta: r.nombre_ruta, id_cobrador: r.cobradorId })}
-                            >
-                              Editar
-                            </button>
-                            <button
-                              type="button"
-                              className="btn btn-secondary btn-sm"
-                              style={{ padding: '4px 8px', fontSize: '0.75rem', borderColor: 'var(--color-danger)', color: 'var(--color-danger)', fontWeight: 600 }}
-                              onClick={() => handleDeleteRoute(r.id)}
-                            >
-                              Eliminar
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                      {rutas.length === 0 && (
-                        <tr>
-                          <td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
-                            No hay rutas registradas.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </>
+          <RutasView
+            rutas={rutas}
+            cobradoresList={cobradoresList}
+            newRoute={newRoute}
+            setNewRoute={setNewRoute}
+            editingRoute={editingRoute}
+            setEditingRoute={setEditingRoute}
+            onCreateRoute={handleCreateRoute}
+            onUpdateRoute={handleUpdateRoute}
+            onDeleteRoute={handleDeleteRoute}
+            onBackToSettings={() => setActiveTab('configuraciones')}
+          />
         )}
 
         {activeTab === 'usuarios' && user?.rol === 'ADMIN' && (
@@ -3072,96 +2952,11 @@ function App() {
         )}
 
         {activeTab === 'aprobaciones' && (
-          <div className="section-container" style={{ flexDirection: 'column', gap: '20px' }}>
-            <div className="panel" style={{ background: 'var(--bg-card)', border: '1px solid rgba(245, 158, 11, 0.35)' }}>
-              <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-                <h2 className="panel-title" style={{ color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.2rem' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '28px' }}>rule</span>
-                  Solicitudes de Préstamo Pendientes de Aprobación ({creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length})
-                </h2>
-                <span className="badge badge-warning" style={{ fontWeight: 700, padding: '6px 12px' }}>
-                  Módulo de Aprobaciones ADMIN
-                </span>
-              </div>
-
-              {creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-secondary)' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '56px', color: '#10b981', display: 'block', marginBottom: '12px' }}>verified</span>
-                  <h3 style={{ color: 'var(--text-primary)', fontSize: '1.3rem', marginBottom: '6px', fontWeight: 700 }}>¡Todo al día!</h3>
-                  <p style={{ fontSize: '0.95rem' }}>No tienes solicitudes de préstamo pendientes por revisar en este momento.</p>
-                </div>
-              ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '20px', marginTop: '20px' }}>
-                  {creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').map(c => (
-                    <div key={c.id} style={{
-                      background: 'var(--bg-card-hover)',
-                      border: '1px solid rgba(245, 158, 11, 0.35)',
-                      borderRadius: '20px',
-                      padding: '20px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      gap: '16px',
-                      boxShadow: 'var(--shadow-premium)'
-                    }}>
-                      <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                          <div>
-                            <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#f59e0b', fontWeight: 700, letterSpacing: '0.5px' }}>Solicitud #{c.id}</span>
-                            <h4 style={{ color: 'var(--text-primary)', fontSize: '1.2rem', fontWeight: 800, margin: '2px 0 0 0' }}>{c.clienteNombre}</h4>
-                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Documento: {c.documento || 'No especificado'}</span>
-                          </div>
-                          <span className="badge badge-warning" style={{ fontWeight: 700, fontSize: '0.75rem' }}>
-                            PENDIENTE
-                          </span>
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.9rem', background: 'var(--bg-input)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span style={{ color: 'var(--text-secondary)' }}>Monto Solicitado:</span>
-                            <strong style={{ color: '#10b981', fontSize: '1.1rem' }}>${c.monto.toLocaleString()} COP</strong>
-                          </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span style={{ color: 'var(--text-secondary)' }}>Tasa Interés:</span>
-                            <strong style={{ color: 'var(--text-primary)' }}>{c.interes}%</strong>
-                          </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span style={{ color: 'var(--text-secondary)' }}>Total a Pagar:</span>
-                            <strong style={{ color: 'var(--text-primary)' }}>${c.totalAPagar.toLocaleString()} COP</strong>
-                          </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span style={{ color: 'var(--text-secondary)' }}>Cuota ({c.frecuencia}):</span>
-                            <strong style={{ color: '#f59e0b' }}>${c.valorCuota.toLocaleString()} COP</strong>
-                          </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '6px', borderTop: '1px solid var(--border-color)' }}>
-                            <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>Fecha Solicitud:</span>
-                            <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>{c.fecha}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'flex', gap: '10px', paddingTop: '12px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                        <button
-                          onClick={() => handleApproveCredit(c.id)}
-                          className="btn btn-primary"
-                          style={{ flex: 1, background: '#10b981', borderColor: '#10b981', color: 'white', fontWeight: 800, padding: '10px', justifyContent: 'center', fontSize: '0.9rem' }}
-                        >
-                          ✅ Aprobar Préstamo
-                        </button>
-                        <button
-                          onClick={() => handleRejectCredit(c.id)}
-                          className="btn btn-danger"
-                          style={{ flex: 1, background: '#ef4444', borderColor: '#ef4444', color: 'white', fontWeight: 800, padding: '10px', justifyContent: 'center', fontSize: '0.9rem' }}
-                        >
-                          ❌ Rechazar
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+          <AprobacionesView
+            creditos={creditos}
+            onApproveCredit={handleApproveCredit}
+            onRejectCredit={handleRejectCredit}
+          />
         )}
 
         {activeTab === 'pagos' && (
@@ -3339,108 +3134,15 @@ function App() {
         )}
 
         {activeTab === 'gastos' && (
-          <div className="section-container layout-crud">
-            <div className="panel">
-              <div className="panel-header">
-                <h2 className="panel-title">Nuevo Gasto de Ruta</h2>
-              </div>
-              <form onSubmit={handleAddGasto}>
-                <div className="form-group">
-                  <label htmlFor="gastoDesc">Descripción del Gasto</label>
-                  <input
-                    id="gastoDesc"
-                    type="text"
-                    className="form-control"
-                    placeholder="Ej. Gasolina moto Centro"
-                    value={newGasto.descripcion}
-                    onChange={(e) => setNewGasto({ ...newGasto, descripcion: e.target.value })}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="gastoMonto">Monto Egresado ($)</label>
-                  <input
-                    id="gastoMonto"
-                    type="number"
-                    className="form-control"
-                    placeholder="Ej. 15000"
-                    value={newGasto.monto}
-                    onChange={(e) => setNewGasto({ ...newGasto, monto: e.target.value })}
-                  />
-                </div>
-
-                <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '12px' }}>
-                  <PlusCircle size={18} /> Registrar Gasto
-                </button>
-              </form>
-            </div>
-
-            <div className="panel">
-              <div className="panel-header">
-                <h2 className="panel-title">Historial de Gastos de Ruta</h2>
-                {user?.rol === 'ADMIN' && (
-                  <button 
-                    type="button"
-                    className="btn-export"
-                    onClick={() => {
-                      const headers = ["ID Gasto", "Cobrador", "Descripcion", "Monto Gasto", "Fecha"];
-                      const dataToExport = gastos.map(g => [
-                        g.id,
-                        g.cobrador,
-                        g.descripcion,
-                        g.monto,
-                        g.fecha
-                      ]);
-                      exportToCSV(dataToExport, `Zenu_Gastos_${new Date().toISOString().split('T')[0]}`, headers);
-                    }}
-                  >
-                    <FileDown size={14} /> Exportar a Excel
-                  </button>
-                )}
-              </div>
-              <div className="table-wrapper">
-                <table className="custom-table">
-                  <thead>
-                    <tr>
-                      <th>Cobrador</th>
-                      <th>Descripción</th>
-                      <th>Monto</th>
-                      <th>Fecha</th>
-                      {user?.rol === 'ADMIN' && <th>Acciones</th>}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {gastos.map(g => (
-                      <tr key={g.id}>
-                        <td data-label="Cobrador" style={{ fontWeight: 600 }}>{g.cobrador}</td>
-                        <td data-label="Descripción">{g.descripcion}</td>
-                        <td data-label="Monto" style={{ color: 'var(--color-danger)', fontWeight: 600 }}>-${g.monto.toLocaleString()} COP</td>
-                        <td data-label="Fecha">{g.fecha}</td>
-                        {user?.rol === 'ADMIN' && (
-                          <td data-label="Acciones">
-                            <button
-                              className="btn btn-secondary btn-sm"
-                              style={{ color: 'var(--color-danger)' }}
-                              onClick={() => handleDeleteGasto(g.id)}
-                            >
-                              <Trash2 size={14} /> Eliminar
-                            </button>
-                          </td>
-                        )}
-                      </tr>
-                    ))}
-                    {gastos.length === 0 && (
-                      <tr>
-                        <td colSpan={user?.rol === 'ADMIN' ? 5 : 4} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
-                          No hay gastos operativos registrados.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+          <GastosView
+            user={user}
+            gastos={gastos}
+            newGasto={newGasto}
+            setNewGasto={setNewGasto}
+            onAddGasto={handleAddGasto}
+            onDeleteGasto={handleDeleteGasto}
+            onExportCSV={exportToCSV}
+          />
         )}
 
         {activeTab === 'liquidaciones' && user?.rol === 'ADMIN' && (
@@ -3854,57 +3556,15 @@ function App() {
       </nav>
 
       {/* Modal del Recibo POS Térmico */}
-      {showReceiptModal && receiptData && (
-        <div className="receipt-modal-overlay">
-          <div className="receipt-modal-content">
-            <div className="receipt-print-area">
-              <h3>ZENU CREDITS</h3>
-              <p style={{ textAlign: 'center', fontSize: '0.75rem', margin: '0 0 10px 0' }}>COMPROBANTE DE ABONO</p>
-              <p style={{ textAlign: 'center', margin: '0' }}>--------------------------------</p>
-              <p><strong>Nro Recibo:</strong> #00{receiptData.id}</p>
-              <p><strong>Fecha:</strong> {new Date(receiptData.fecha).toLocaleString()}</p>
-              <p><strong>Cliente:</strong> {receiptData.clienteNombre}</p>
-              <p><strong>Cobrador:</strong> {receiptData.cobrador}</p>
-              <p style={{ textAlign: 'center', margin: '0' }}>--------------------------------</p>
-              <p><strong>Valor Recibido:</strong> ${receiptData.monto.toLocaleString()} COP</p>
-              <p><strong>Método de Pago:</strong> {receiptData.tipo}</p>
-              <p><strong>Saldo Pendiente:</strong> ${receiptData.saldoPendiente.toLocaleString()} COP</p>
-              <p><strong>Estado Crédito:</strong> {receiptData.estadoCredito}</p>
-              <p style={{ textAlign: 'center', margin: '0' }}>--------------------------------</p>
-              <div style={{ textAlign: 'center', marginTop: '12px', fontSize: '0.8rem' }}>
-                <p>¡Gracias por su pago!</p>
-                <p>Conserve este comprobante</p>
-              </div>
-            </div>
-            <div className="receipt-modal-actions">
-              <button 
-                className="btn btn-primary" 
-                onClick={() => window.print()}
-                style={{ width: '100%' }}
-              >
-                🖨️ Imprimir Recibo
-              </button>
-              <button 
-                className="btn btn-secondary" 
-                onClick={() => handleShareWhatsApp(receiptData)}
-                style={{ width: '100%', borderColor: '#10b981', color: '#10b981' }}
-              >
-                💬 Compartir por WhatsApp
-              </button>
-              <button 
-                className="btn btn-secondary" 
-                onClick={() => {
-                  setShowReceiptModal(false);
-                  setReceiptData(null);
-                }}
-                style={{ width: '100%', marginTop: '5px' }}
-              >
-                Cerrar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <PosReceiptModal
+        show={showReceiptModal}
+        receiptData={receiptData}
+        onClose={() => {
+          setShowReceiptModal(false);
+          setReceiptData(null);
+        }}
+        onShareWhatsApp={handleShareWhatsApp}
+      />
     </div>
   );
 }

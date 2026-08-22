@@ -4,10 +4,9 @@ import jwt from 'jsonwebtoken';
 import rateLimit from 'express-rate-limit';
 import pool from '../config/db';
 import { authenticateToken, AuthRequest } from '../middleware/auth';
+import { JWT_SECRET, JWT_EXPIRES_IN } from '../config/env';
 
 const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_zenu_token_key_123';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
 // Limitador de fuerza bruta para inicio de sesión
 const loginLimiter = rateLimit({

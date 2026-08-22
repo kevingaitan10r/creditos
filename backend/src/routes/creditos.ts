@@ -7,7 +7,6 @@ const router = Router();
 // GET /api/creditos
 router.get('/', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
-    await actualizarEstadosCreditos();
     const queryStr = `
       SELECT 
         cr.id_credito as id,
