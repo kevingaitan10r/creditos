@@ -142,23 +142,85 @@ body::after {
 /* Layout Wrapper */
 .app-container {
   display: flex;
+  flex-direction: column;
   width: 100%;
   max-width: 100%;
   min-height: 100vh;
   min-width: 0;
 }
 
-/* Sidebar Styling: Translucent Glassmorphism */
-.sidebar {
-  width: 270px;
+/* Top Navbar (Reemplaza barra lateral) */
+.top-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px;
   background-color: var(--bg-sidebar);
   backdrop-filter: var(--glass-blur);
-  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.top-navbar-brand {
   display: flex;
-  flex-direction: column;
-  padding: 30px 20px;
-  flex-shrink: 0;
-  z-index: 10;
+  align-items: center;
+  gap: 10px;
+}
+
+.top-navbar-menu {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.top-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.top-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.top-nav-btn.active {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: var(--color-primary);
+  font-weight: 700;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+}
+
+.top-navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+@media (max-width: 1024px) {
+  .top-navbar {
+    display: none;
+  }
+}
+
+/* Sidebar Styling: Translucent Glassmorphism (Legacy) */
+.sidebar {
+  display: none;
 }
 
 .logo-container {

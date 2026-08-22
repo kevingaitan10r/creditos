@@ -106,6 +106,7 @@ function App() {
   const [receiptData, setReceiptData] = useState<any>(null);
   const [theme, setTheme] = useState<'dark' | 'light'>((localStorage.getItem('zenu_theme') as 'dark' | 'light') || 'dark');
   const [showQuickActionsMenu, setShowQuickActionsMenu] = useState(false);
+  const [showAdminSubmenu, setShowAdminSubmenu] = useState(false);
   
   // Offline synchronization states
   const [offlinePayments, setOfflinePayments] = useState<any[]>(() => {
@@ -1489,144 +1490,247 @@ function App() {
         </div>
       </div>
 
-      {/* Desktop Sidebar Navigation */}
-      <aside className="sidebar">
-        <div className="logo-container">
-          <div className="logo-icon shadow-glow-emerald">Z</div>
+      {/* Desktop & Web Top Navbar (Reemplaza la barra lateral antigua) */}
+      <header className="top-navbar">
+        <div className="top-navbar-brand" onClick={() => setActiveTab('dashboard')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div className="logo-icon shadow-glow-emerald" style={{ width: '36px', height: '36px', fontSize: '1.1rem', borderRadius: '8px' }}>Z</div>
           <div className="logo-text">
-            <span>ZENU</span>
-            <span style={{ fontSize: '0.65rem', display: 'block', color: 'var(--color-primary)', fontWeight: 600, letterSpacing: '1px', marginTop: '-4px' }}>FINTECH PRO</span>
+            <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.3px', color: 'white' }}>ZENU</span>
+            <span style={{ fontSize: '0.6rem', display: 'block', color: 'var(--color-primary)', fontWeight: 700, letterSpacing: '1px', marginTop: '-4px' }}>FINTECH PRO</span>
           </div>
         </div>
 
-        <ul className="nav-menu">
-          <li>
-            <button
-              className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
-              onClick={() => setActiveTab('dashboard')}
-            >
-              <LayoutDashboard className="nav-icon" />
-              <span>Dashboard</span>
-            </button>
-          </li>
-          
-          {user?.rol === 'ADMIN' && (
-            <li>
-              <button
-                className={`nav-item ${activeTab === 'aprobaciones' ? 'active' : ''}`}
-                onClick={() => setActiveTab('aprobaciones')}
-              >
-                <CheckCircle2 className="nav-icon" style={{ color: creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length > 0 ? '#f59e0b' : 'inherit' }} />
-                <span>Aprobaciones</span>
-                {creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length > 0 && (
-                  <span style={{
-                    marginLeft: 'auto',
-                    background: '#f59e0b',
-                    color: '#0b0f19',
-                    fontWeight: 800,
-                    fontSize: '0.72rem',
-                    padding: '2px 8px',
-                    borderRadius: '10px'
-                  }}>
-                    {creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length}
-                  </span>
-                )}
-              </button>
-            </li>
-          )}
-          
-          {user?.rol === 'ADMIN' && (
-            <li>
-              <button
-                className={`nav-item ${activeTab === 'rutas' ? 'active' : ''}`}
-                onClick={() => setActiveTab('rutas')}
-              >
-                <MapPin className="nav-icon" />
-                <span>Gestión de Rutas</span>
-              </button>
-            </li>
-          )}
+        {/* Navigation Tabs (Horizontal Top Bar) */}
+        <nav className="top-navbar-menu">
+          <button
+            className={`top-nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setActiveTab('dashboard')}
+          >
+            <LayoutDashboard size={16} />
+            <span>Inicio</span>
+          </button>
 
           {user?.rol === 'ADMIN' && (
-            <li>
-              <button
-                className={`nav-item ${activeTab === 'usuarios' ? 'active' : ''}`}
-                onClick={() => setActiveTab('usuarios')}
-              >
-                <Users className="nav-icon" />
-                <span>Gestión de Usuarios</span>
-              </button>
-            </li>
+            <button
+              className={`top-nav-btn ${activeTab === 'aprobaciones' ? 'active' : ''}`}
+              onClick={() => setActiveTab('aprobaciones')}
+              style={{ position: 'relative' }}
+            >
+              <CheckCircle2 size={16} style={{ color: creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length > 0 ? '#f59e0b' : 'inherit' }} />
+              <span>Aprobaciones</span>
+              {creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length > 0 && (
+                <span style={{
+                  background: '#f59e0b',
+                  color: '#0b0f19',
+                  fontWeight: 800,
+                  fontSize: '0.7rem',
+                  padding: '1px 6px',
+                  borderRadius: '10px'
+                }}>
+                  {creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length}
+                </span>
+              )}
+            </button>
           )}
 
-          <li>
-            <button
-              className={`nav-item ${activeTab === 'clientes' ? 'active' : ''}`}
-              onClick={() => setActiveTab('clientes')}
-            >
-              <Users className="nav-icon" />
-              <span>Clientes</span>
-            </button>
-          </li>
-          <li>
-            <button
-              className={`nav-item ${activeTab === 'creditos' ? 'active' : ''}`}
-              onClick={() => setActiveTab('creditos')}
-            >
-              <CreditCard className="nav-icon" />
-              <span>Créditos</span>
-            </button>
-          </li>
-          <li>
-            <button
-              className={`nav-item ${activeTab === 'pagos' ? 'active' : ''}`}
-              onClick={() => setActiveTab('pagos')}
-            >
-              <TrendingUp className="nav-icon" />
-              <span>Recaudo Diario</span>
-            </button>
-          </li>
-          <li>
-            <button
-              className={`nav-item ${activeTab === 'gastos' ? 'active' : ''}`}
-              onClick={() => setActiveTab('gastos')}
-            >
-              <TrendingUp className="nav-icon" style={{ transform: 'rotate(180deg)', color: 'var(--color-danger)' }} />
-              <span>Gastos de Ruta</span>
-            </button>
-          </li>
+          <button
+            className={`top-nav-btn ${activeTab === 'clientes' ? 'active' : ''}`}
+            onClick={() => setActiveTab('clientes')}
+          >
+            <Users size={16} />
+            <span>Clientes</span>
+          </button>
+
+          <button
+            className={`top-nav-btn ${activeTab === 'creditos' ? 'active' : ''}`}
+            onClick={() => setActiveTab('creditos')}
+          >
+            <CreditCard size={16} />
+            <span>Créditos</span>
+          </button>
+
+          <button
+            className={`top-nav-btn ${activeTab === 'pagos' ? 'active' : ''}`}
+            onClick={() => setActiveTab('pagos')}
+          >
+            <TrendingUp size={16} />
+            <span>Recaudo</span>
+          </button>
+
+          <button
+            className={`top-nav-btn ${activeTab === 'gastos' ? 'active' : ''}`}
+            onClick={() => setActiveTab('gastos')}
+          >
+            <TrendingUp size={16} style={{ transform: 'rotate(180deg)', color: 'var(--color-danger)' }} />
+            <span>Gastos</span>
+          </button>
+
           {user?.rol === 'ADMIN' && (
-            <li>
+            <div style={{ position: 'relative' }}>
               <button
-                className={`nav-item ${activeTab === 'liquidaciones' ? 'active' : ''}`}
-                onClick={() => setActiveTab('liquidaciones')}
+                className={`top-nav-btn ${['rutas', 'usuarios', 'liquidaciones'].includes(activeTab) ? 'active' : ''}`}
+                onClick={() => setShowAdminSubmenu(!showAdminSubmenu)}
               >
-                <CheckCircle2 className="nav-icon" />
-                <span>Liquidación Diario</span>
+                <Settings size={16} />
+                <span>Gestión Admin ▾</span>
               </button>
-            </li>
-          )}
-          <li>
-            <button
-              className={`nav-item ${activeTab === 'configuraciones' ? 'active' : ''}`}
-              onClick={() => setActiveTab('configuraciones')}
-            >
-              <Settings className="nav-icon" />
-              <span>Configuración</span>
-            </button>
-          </li>
-        </ul>
 
-        <div className="sidebar-footer" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div className="user-avatar">{user?.nombre.charAt(0).toUpperCase()}</div>
-            <div className="user-info">
-              <span className="user-name">{user?.nombre}</span>
-              <span className="user-role">{user?.rol === 'ADMIN' ? 'Administrador' : 'Cobrador'}</span>
+              {showAdminSubmenu && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  marginTop: '6px',
+                  width: '190px',
+                  background: 'rgba(15, 23, 42, 0.95)',
+                  backdropFilter: 'blur(16px)',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  borderRadius: '14px',
+                  padding: '6px',
+                  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.8)',
+                  zIndex: 100,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px'
+                }}>
+                  <button
+                    onClick={() => { setActiveTab('rutas'); setShowAdminSubmenu(false); }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'transparent', border: 'none', color: 'white', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
+                  >
+                    <MapPin size={14} style={{ color: '#f59e0b' }} />
+                    <span>Gestión de Rutas</span>
+                  </button>
+                  <button
+                    onClick={() => { setActiveTab('usuarios'); setShowAdminSubmenu(false); }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'transparent', border: 'none', color: 'white', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
+                  >
+                    <Users size={14} style={{ color: '#38bdf8' }} />
+                    <span>Gestión de Usuarios</span>
+                  </button>
+                  <button
+                    onClick={() => { setActiveTab('liquidaciones'); setShowAdminSubmenu(false); }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'transparent', border: 'none', color: 'white', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
+                  >
+                    <CheckCircle2 size={14} style={{ color: '#10b981' }} />
+                    <span>Liquidación Diario</span>
+                  </button>
+                </div>
+              )}
             </div>
+          )}
+
+          <button
+            className={`top-nav-btn ${activeTab === 'configuraciones' ? 'active' : ''}`}
+            onClick={() => setActiveTab('configuraciones')}
+          >
+            <Settings size={16} />
+            <span>Ajustes</span>
+          </button>
+        </nav>
+
+        {/* Right Side Header Controls */}
+        <div className="top-navbar-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {stats.totalRecaudadoHoy > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '30px', color: '#10b981', fontWeight: 700, fontSize: '0.8rem' }}>
+              <DollarSign size={14} />
+              <span>Hoy: ${stats.totalRecaudadoHoy.toLocaleString()}</span>
+            </div>
+          )}
+
+          {/* Categoría Consolidada: Operaciones Rápidas */}
+          <div style={{ position: 'relative' }}>
+            <button 
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={() => setShowQuickActionsMenu(!showQuickActionsMenu)}
+              style={{ 
+                background: 'linear-gradient(135deg, #10b981, #059669)',
+                borderColor: '#10b981',
+                color: 'white',
+                fontWeight: 700,
+                fontSize: '0.8rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                boxShadow: '0 0 12px rgba(16, 185, 129, 0.35)',
+                padding: '6px 12px',
+                borderRadius: '10px'
+              }}
+            >
+              <span>⚡ Nueva Operación</span>
+              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+                {showQuickActionsMenu ? 'expand_less' : 'expand_more'}
+              </span>
+            </button>
+
+            {showQuickActionsMenu && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                right: 0,
+                marginTop: '6px',
+                width: '210px',
+                background: 'rgba(15, 23, 42, 0.95)',
+                backdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255, 255, 255, 0.12)',
+                borderRadius: '14px',
+                padding: '6px',
+                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.8)',
+                zIndex: 100,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px'
+              }}>
+                <button
+                  onClick={() => { setActiveTab('creditos'); setShowQuickActionsMenu(false); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '8px 10px', background: 'transparent', border: 'none', color: 'white', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
+                >
+                  <CreditCard size={14} style={{ color: '#10b981' }} />
+                  <span>Crear / Solicitar Crédito</span>
+                </button>
+                <button
+                  onClick={() => { setActiveTab('clientes'); setShowQuickActionsMenu(false); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '8px 10px', background: 'transparent', border: 'none', color: 'white', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
+                >
+                  <Users size={14} style={{ color: '#38bdf8' }} />
+                  <span>Registrar Cliente</span>
+                </button>
+                <button
+                  onClick={() => { setActiveTab('gastos'); setShowQuickActionsMenu(false); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '8px 10px', background: 'transparent', border: 'none', color: 'white', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
+                >
+                  <TrendingUp size={14} style={{ color: '#ef4444', transform: 'rotate(180deg)' }} />
+                  <span>Registrar Gasto Ruta</span>
+                </button>
+                {user?.rol === 'ADMIN' && (
+                  <button
+                    onClick={() => { setActiveTab('rutas'); setShowQuickActionsMenu(false); }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '8px 10px', background: 'transparent', border: 'none', color: 'white', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
+                  >
+                    <MapPin size={14} style={{ color: '#f59e0b' }} />
+                    <span>Gestionar Rutas</span>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          <button className="btn btn-secondary btn-sm" onClick={loadAppData} disabled={loadingHealth} title="Recargar datos">
+            <RefreshCw className={`nav-icon ${loadingHealth ? 'spin' : ''}`} size={14} />
+          </button>
+
+          <div className="db-status-badge shadow-glow-emerald" style={{ padding: '4px 10px', fontSize: '0.75rem' }}>
+            <span className={`status-dot ${apiOnline ? 'online' : 'offline'}`}></span>
+            <span>API: {apiOnline === null ? 'Verificando...' : apiOnline ? `Online (${dbTime ? new Date(dbTime).toLocaleTimeString() : 'Postgres'})` : 'Offline'}</span>
+          </div>
+
+          <div className="user-profile-badge" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.05)', padding: '4px 10px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div className="user-avatar" style={{ width: '24px', height: '24px', fontSize: '0.72rem' }}>{user?.nombre.charAt(0).toUpperCase()}</div>
+            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'white' }}>{user?.nombre.split(' ')[0]}</span>
+            <span className="badge badge-neutral" style={{ fontSize: '0.65rem', padding: '2px 6px' }}>{user?.rol === 'ADMIN' ? 'Admin' : 'Cobrador'}</span>
           </div>
         </div>
-      </aside>
+      </header>
 
       {/* Main Content */}
       <main className="main-content">
@@ -1639,110 +1743,6 @@ function App() {
             </button>
           </div>
         )}
-        <header className="header">
-          <div className="welcome-section">
-            <h1>Control de Operaciones Zenu</h1>
-            <p>Monitoreo financiero en tiempo real • Recaudación y Rutas</p>
-          </div>
-
-          <div className="header-actions">
-            {stats.totalRecaudadoHoy > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '30px', color: '#10b981', fontWeight: 700, fontSize: '0.85rem' }}>
-                <DollarSign size={16} />
-                <span>Recaudado Hoy: ${stats.totalRecaudadoHoy.toLocaleString()}</span>
-              </div>
-            )}
-
-            {/* Categoría Consolidada: Operaciones Rápidas */}
-            <div style={{ position: 'relative' }}>
-              <button 
-                type="button"
-                className="btn btn-primary"
-                onClick={() => setShowQuickActionsMenu(!showQuickActionsMenu)}
-                style={{ 
-                  background: 'linear-gradient(135deg, #10b981, #059669)',
-                  borderColor: '#10b981',
-                  color: 'white',
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  boxShadow: '0 0 15px rgba(16, 185, 129, 0.35)',
-                  padding: '8px 16px',
-                  borderRadius: '12px'
-                }}
-              >
-                <span>⚡ Nueva Operación</span>
-                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
-                  {showQuickActionsMenu ? 'expand_less' : 'expand_more'}
-                </span>
-              </button>
-
-              {showQuickActionsMenu && (
-                <div style={{
-                  position: 'absolute',
-                  top: '100%',
-                  right: 0,
-                  marginTop: '8px',
-                  width: '230px',
-                  background: 'rgba(15, 23, 42, 0.95)',
-                  backdropFilter: 'blur(16px)',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
-                  borderRadius: '16px',
-                  padding: '8px',
-                  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.8)',
-                  zIndex: 100,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '4px'
-                }}>
-                  <button
-                    onClick={() => { setActiveTab('creditos'); setShowQuickActionsMenu(false); }}
-                    style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 12px', background: 'transparent', border: 'none', color: 'white', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
-                  >
-                    <CreditCard size={16} style={{ color: '#10b981' }} />
-                    <span>Solicitar / Crear Crédito</span>
-                  </button>
-                  <button
-                    onClick={() => { setActiveTab('clientes'); setShowQuickActionsMenu(false); }}
-                    style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 12px', background: 'transparent', border: 'none', color: 'white', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
-                  >
-                    <Users size={16} style={{ color: '#38bdf8' }} />
-                    <span>Registrar Cliente</span>
-                  </button>
-                  <button
-                    onClick={() => { setActiveTab('gastos'); setShowQuickActionsMenu(false); }}
-                    style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 12px', background: 'transparent', border: 'none', color: 'white', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
-                  >
-                    <TrendingUp size={16} style={{ color: '#ef4444', transform: 'rotate(180deg)' }} />
-                    <span>Registrar Gasto Ruta</span>
-                  </button>
-                  {user?.rol === 'ADMIN' && (
-                    <button
-                      onClick={() => { setActiveTab('rutas'); setShowQuickActionsMenu(false); }}
-                      style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 12px', background: 'transparent', border: 'none', color: 'white', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
-                    >
-                      <MapPin size={16} style={{ color: '#f59e0b' }} />
-                      <span>Gestionar Rutas</span>
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <button className="btn btn-secondary btn-sm" onClick={loadAppData} disabled={loadingHealth} title="Recargar datos">
-              <RefreshCw className={`nav-icon ${loadingHealth ? 'spin' : ''}`} />
-            </button>
-
-            <div className="db-status-badge shadow-glow-emerald">
-              <span className={`status-dot ${apiOnline ? 'online' : 'offline'}`}></span>
-              <span>
-                API: {apiOnline === null ? 'Verificando...' : apiOnline ? `Online (${dbTime ? new Date(dbTime).toLocaleTimeString() : 'Postgres'})` : 'Offline'}
-              </span>
-            </div>
-          </div>
-        </header>
 
         {/* Dynamic Views */}
         {activeTab === 'dashboard' && (
