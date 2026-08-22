@@ -973,23 +973,28 @@ function App() {
       const data = await res.json();
       if (res.ok) {
         loadAppData();
-        if (data.requiereAprobacion || user?.rol === 'COBRADOR') {
-          const totalCalculado = Math.round(Number(newCredit.monto) + (Number(newCredit.monto) * (Number(newCredit.tasa) / 100)));
-          const cuotaCalculada = Math.round(totalCalculado / Number(newCredit.cuotas));
-          const msg = 
-            `⚠️ *NUEVA SOLICITUD DE PRÉSTAMO - ZENU* ⚠️\n\n` +
-            `*Cobrador:* ${user?.nombre}\n` +
-            `*Cliente:* ${clientName}\n` +
-            `*Monto:* $${Number(newCredit.monto).toLocaleString()} COP\n` +
-            `*Tasa Interés:* ${newCredit.tasa}%\n` +
-            `*Total a Pagar:* $${totalCalculado.toLocaleString()} COP\n` +
-            `*Cuota:* $${cuotaCalculada.toLocaleString()} COP (${newCredit.frecuencia})\n\n` +
-            `*Por favor ingresa al sistema Zenu para Aprobar o Rechazar el préstamo.*`;
+        if (data.requiereAprobacion) {
+          if (user?.rol === 'ADMIN') {
+            alert(`⚠️ Solicitud de Crédito creada exitosamente.\n\nMotivo: ${data.motivoAprobacion || 'Se requiere aprobación del Administrador.'}\n\nSerás redirigido al módulo de Aprobaciones.`);
+            setActiveTab('aprobaciones');
+          } else {
+            const totalCalculado = Math.round(Number(newCredit.monto) + (Number(newCredit.monto) * (Number(newCredit.tasa) / 100)));
+            const cuotaCalculada = Math.round(totalCalculado / Number(newCredit.cuotas));
+            const msg = 
+              `⚠️ *NUEVA SOLICITUD DE PRÉSTAMO - ZENU* ⚠️\n\n` +
+              `*Cobrador:* ${user?.nombre}\n` +
+              `*Cliente:* ${clientName}\n` +
+              `*Monto:* $${Number(newCredit.monto).toLocaleString()} COP\n` +
+              `*Tasa Interés:* ${newCredit.tasa}%\n` +
+              `*Total a Pagar:* $${totalCalculado.toLocaleString()} COP\n` +
+              `*Cuota:* $${cuotaCalculada.toLocaleString()} COP (${newCredit.frecuencia})\n\n` +
+              `*Por favor ingresa al sistema Zenu para Aprobar o Rechazar el préstamo.*`;
 
-          const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
-          
-          if (window.confirm('⚠️ Solicitud de crédito enviada al Administrador para su aprobación.\n\n¿Deseas enviar una notificación por WhatsApp al Administrador ahora mismo?')) {
-            window.open(waUrl, '_blank');
+            const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+            
+            if (window.confirm('⚠️ Solicitud de crédito enviada al Administrador para su aprobación.\n\n¿Deseas enviar una notificación por WhatsApp al Administrador ahora mismo?')) {
+              window.open(waUrl, '_blank');
+            }
           }
         } else {
           alert('✅ Crédito creado y activado exitosamente.');
@@ -2673,6 +2678,12 @@ function App() {
                           <option key={c.id} value={c.id}>{c.nombre} ({c.documento})</option>
                         ))}
                       </select>
+                      {newCredit.clienteId && creditos.some(c => (String(c.id_cliente) === String(newCredit.clienteId) || String(c.clienteId) === String(newCredit.clienteId)) && (c.estado === 'ACTIVO' || c.estado === 'MORA' || c.estado === 'PENDIENTE_APROBACION')) && (
+                        <div style={{ marginTop: '8px', padding: '8px 12px', background: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.4)', borderRadius: '8px', color: '#f59e0b', fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>warning</span>
+                          <span>Este cliente ya registra un crédito activo/mora. Esta nueva solicitud pasará al módulo de Aprobaciones ADMIN.</span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="form-group">

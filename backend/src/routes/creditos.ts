@@ -91,8 +91,25 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response) => {
       });
     }
 
+    // Verificar si el cliente ya tiene un crédito activo, en mora o pendiente de aprobación
+    const activeCheck = await pool.query(
+      `SELECT id_credito, estado FROM creditos WHERE id_cliente = $1 AND estado IN ('ACTIVO', 'MORA', 'PENDIENTE_APROBACION')`,
+      [clienteId]
+    );
+
+    const tieneCreditosActivos = activeCheck.rows.length > 0;
     const userRole = req.user?.rol;
-    const estadoInicial = userRole === 'COBRADOR' ? 'PENDIENTE_APROBACION' : 'ACTIVO';
+    const requiereAprobacionExplicit = req.body.requiereAprobacion === true || req.body.requiereAprobacion === 'true';
+
+    // Regla de Aprobaciones:
+    // 1. Si el usuario es COBRADOR -> Siempre PENDIENTE_APROBACION
+    // 2. Si el cliente YA TIENE créditos activos/mora/pendientes -> Siempre PENDIENTE_APROBACION
+    // 3. Si se solicita explícitamente requiereAprobacion -> PENDIENTE_APROBACION
+    // 4. Solo si es ADMIN y el cliente NO tiene créditos previos activos -> ACTIVO
+    let estadoInicial = 'ACTIVO';
+    if (userRole === 'COBRADOR' || tieneCreditosActivos || requiereAprobacionExplicit) {
+      estadoInicial = 'PENDIENTE_APROBACION';
+    }
 
     const queryStr = `
       INSERT INTO creditos 
@@ -117,7 +134,10 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response) => {
     res.status(201).json({
       status: 'success',
       data: result.rows[0],
-      requiereAprobacion: estadoInicial === 'PENDIENTE_APROBACION'
+      requiereAprobacion: estadoInicial === 'PENDIENTE_APROBACION',
+      motivoAprobacion: tieneCreditosActivos 
+        ? 'El cliente ya registra créditos previos activos/pendientes.' 
+        : (userRole === 'COBRADOR' ? 'Solicitud registrada por cobrador.' : 'Revisión requerida.')
     });
   } catch (error: any) {
     res.status(500).json({
