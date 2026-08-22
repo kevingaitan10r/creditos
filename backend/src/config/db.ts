@@ -50,7 +50,8 @@ export const actualizarEstadosCreditos = async () => {
     END
     FROM creditos c2
     LEFT JOIN ultimo_pago up ON c2.id_credito = up.id_credito
-    WHERE cr.id_credito = c2.id_credito AND cr.estado != 'PAGADO';
+    WHERE cr.id_credito = c2.id_credito 
+      AND cr.estado IN ('ACTIVO', 'MORA');
   `;
   await pool.query(updateQuery);
 };

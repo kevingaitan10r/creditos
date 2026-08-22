@@ -9,7 +9,6 @@ const router = Router();
 // GET /api/dashboard/stats
 router.get('/stats', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
-    await actualizarEstadosCreditos();
     const statsQuery = `
       SELECT
         COALESCE(SUM(saldo_pendiente) FILTER (WHERE estado != 'PAGADO'), 0)::float as "totalCapitalEnCalle",
