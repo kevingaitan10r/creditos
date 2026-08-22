@@ -62,7 +62,6 @@ function App() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [apiOnline, setApiOnline] = useState<boolean | null>(null);
   const [dbTime, setDbTime] = useState<string>('');
-  const [loadingHealth, setLoadingHealth] = useState(false);
 
   // Entities States
   const [clientes, setClientes] = useState<any[]>([]);
@@ -150,7 +149,6 @@ function App() {
 
   // Check backend health
   const checkHealth = async () => {
-    setLoadingHealth(true);
     try {
       const response = await fetch(`${API_URL}/health`);
       if (response.ok) {
@@ -162,8 +160,6 @@ function App() {
       }
     } catch (error) {
       setApiOnline(false);
-    } finally {
-      setLoadingHealth(false);
     }
   };
 
@@ -1715,19 +1711,34 @@ function App() {
             )}
           </div>
 
-          <button className="btn btn-secondary btn-sm" onClick={loadAppData} disabled={loadingHealth} title="Recargar datos">
-            <RefreshCw className={`nav-icon ${loadingHealth ? 'spin' : ''}`} size={14} />
-          </button>
-
-          <div className="db-status-badge shadow-glow-emerald" style={{ padding: '4px 10px', fontSize: '0.75rem' }}>
-            <span className={`status-dot ${apiOnline ? 'online' : 'offline'}`}></span>
-            <span>API: {apiOnline === null ? 'Verificando...' : apiOnline ? `Online (${dbTime ? new Date(dbTime).toLocaleTimeString() : 'Postgres'})` : 'Offline'}</span>
-          </div>
-
-          <div className="user-profile-badge" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.05)', padding: '4px 10px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <div className="user-avatar" style={{ width: '24px', height: '24px', fontSize: '0.72rem' }}>{user?.nombre.charAt(0).toUpperCase()}</div>
-            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'white' }}>{user?.nombre.split(' ')[0]}</span>
-            <span className="badge badge-neutral" style={{ fontSize: '0.65rem', padding: '2px 6px' }}>{user?.rol === 'ADMIN' ? 'Admin' : 'Cobrador'}</span>
+          {/* Perfil y Rol del Usuario (Ubicado en el extremo derecho) */}
+          <div 
+            className="user-profile-badge" 
+            onClick={() => setActiveTab('configuraciones')}
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px', 
+              background: 'rgba(255,255,255,0.06)', 
+              padding: '6px 14px', 
+              borderRadius: '24px', 
+              border: '1px solid rgba(255,255,255,0.1)',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            title={`Sistema Conectado • Servidor: ${dbTime ? new Date(dbTime).toLocaleTimeString() : 'Online'}`}
+          >
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <div className="user-avatar" style={{ width: '26px', height: '26px', fontSize: '0.75rem', background: '#10b981', color: 'white', fontWeight: 800 }}>{user?.nombre.charAt(0).toUpperCase()}</div>
+              <span 
+                className={`status-dot ${apiOnline ? 'online' : 'offline'}`} 
+                style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '8px', height: '8px', border: '2px solid #0b0f19' }} 
+              />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
+              <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'white' }}>{user?.nombre}</span>
+              <span style={{ fontSize: '0.68rem', color: '#10b981', fontWeight: 600 }}>{user?.rol === 'ADMIN' ? 'Administrador' : 'Cobrador'}</span>
+            </div>
           </div>
         </div>
       </header>
