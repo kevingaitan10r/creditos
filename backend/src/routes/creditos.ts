@@ -93,21 +93,21 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response) => {
 
     // Verificar si el cliente ya tiene un crédito activo, en mora o pendiente de aprobación
     const activeCheck = await pool.query(
-      `SELECT id_credito, estado FROM creditos WHERE id_cliente = $1 AND estado IN ('ACTIVO', 'MORA', 'PENDIENTE_APROBACION')`,
+      `SELECT id_credito, estado FROM creditos WHERE id_cliente = $1 AND UPPER(estado) IN ('ACTIVO', 'MORA', 'PENDIENTE_APROBACION', 'PENDIENTE')`,
       [clienteId]
     );
 
     const tieneCreditosActivos = activeCheck.rows.length > 0;
-    const userRole = req.user?.rol;
+    const userRole = req.user?.rol ? String(req.user.rol).toUpperCase().trim() : '';
     const requiereAprobacionExplicit = req.body.requiereAprobacion === true || req.body.requiereAprobacion === 'true';
 
     // Regla de Aprobaciones:
-    // 1. Si el usuario es COBRADOR -> Siempre PENDIENTE_APROBACION
+    // 1. Si el usuario NO ES ADMIN (ej. COBRADOR) -> Siempre PENDIENTE_APROBACION
     // 2. Si el cliente YA TIENE créditos activos/mora/pendientes -> Siempre PENDIENTE_APROBACION
     // 3. Si se solicita explícitamente requiereAprobacion -> PENDIENTE_APROBACION
     // 4. Solo si es ADMIN y el cliente NO tiene créditos previos activos -> ACTIVO
     let estadoInicial = 'ACTIVO';
-    if (userRole === 'COBRADOR' || tieneCreditosActivos || requiereAprobacionExplicit) {
+    if (userRole !== 'ADMIN' || tieneCreditosActivos || requiereAprobacionExplicit) {
       estadoInicial = 'PENDIENTE_APROBACION';
     }
 

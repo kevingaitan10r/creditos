@@ -6,12 +6,18 @@ interface AprobacionesViewProps {
   onRejectCredit: (id: number) => void;
 }
 
+export const isPendingApproval = (st?: string) => {
+  if (!st) return false;
+  const s = String(st).toUpperCase().trim();
+  return s === 'PENDIENTE_APROBACION' || s === 'PENDIENTE' || s.includes('PENDIENTE');
+};
+
 export const AprobacionesView: React.FC<AprobacionesViewProps> = ({
   creditos,
   onApproveCredit,
   onRejectCredit
 }) => {
-  const pendientes = creditos.filter(c => c.estado === 'PENDIENTE_APROBACION');
+  const pendientes = creditos.filter(c => isPendingApproval(c.estado));
 
   return (
     <div className="section-container" style={{ flexDirection: 'column', gap: '20px' }}>

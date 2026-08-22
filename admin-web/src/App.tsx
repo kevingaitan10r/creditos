@@ -19,7 +19,7 @@ import {
   FileDown
 } from 'lucide-react';
 import { PosReceiptModal } from './components/modals/PosReceiptModal';
-import { AprobacionesView } from './features/aprobaciones/AprobacionesView';
+import { AprobacionesView, isPendingApproval } from './features/aprobaciones/AprobacionesView';
 import { GastosView } from './features/gastos/GastosView';
 import { RutasView } from './features/rutas/RutasView';
 import './App.css';
@@ -1466,7 +1466,7 @@ function App() {
           <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.3px', color: 'var(--text-primary)' }}>ZENU</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {user?.rol === 'ADMIN' && creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length > 0 && (
+          {user?.rol === 'ADMIN' && creditos.filter(c => isPendingApproval(c.estado)).length > 0 && (
             <button
               onClick={() => setActiveTab('aprobaciones')}
               style={{
@@ -1483,7 +1483,7 @@ function App() {
                 boxShadow: '0 0 12px rgba(245, 158, 11, 0.4)'
               }}
             >
-              🔔 Aprobaciones ({creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length})
+              🔔 Aprobaciones ({creditos.filter(c => isPendingApproval(c.estado)).length})
             </button>
           )}
           <span className="badge badge-neutral" style={{ padding: '4px 8px', fontSize: '0.7rem' }}>
@@ -1521,9 +1521,9 @@ function App() {
               onClick={() => setActiveTab('aprobaciones')}
               style={{ position: 'relative' }}
             >
-              <CheckCircle2 size={16} style={{ color: creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length > 0 ? '#f59e0b' : 'inherit' }} />
+              <CheckCircle2 size={16} style={{ color: creditos.filter(c => isPendingApproval(c.estado)).length > 0 ? '#f59e0b' : 'inherit' }} />
               <span>Aprobaciones</span>
-              {creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length > 0 && (
+              {creditos.filter(c => isPendingApproval(c.estado)).length > 0 && (
                 <span style={{
                   background: '#f59e0b',
                   color: '#0b0f19',
@@ -1532,7 +1532,7 @@ function App() {
                   padding: '1px 6px',
                   borderRadius: '10px'
                 }}>
-                  {creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length}
+                  {creditos.filter(c => isPendingApproval(c.estado)).length}
                 </span>
               )}
             </button>
@@ -1762,7 +1762,7 @@ function App() {
         {activeTab === 'dashboard' && (
           <>
             {/* Banner Alerta de Solicitudes de Crédito Pendientes (Solo ADMIN) */}
-            {user?.rol === 'ADMIN' && creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length > 0 && (
+            {user?.rol === 'ADMIN' && creditos.filter(c => isPendingApproval(c.estado)).length > 0 && (
               <div style={{
                 background: 'rgba(245, 158, 11, 0.12)',
                 border: '1px solid rgba(245, 158, 11, 0.35)',
@@ -1775,14 +1775,14 @@ function App() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <span className="material-symbols-outlined" style={{ color: '#f59e0b', fontSize: '24px' }}>warning</span>
                     <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#f59e0b' }}>
-                      Solicitudes de Préstamo Pendientes de Aprobación ({creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length})
+                      Solicitudes de Préstamo Pendientes de Aprobación ({creditos.filter(c => isPendingApproval(c.estado)).length})
                     </h3>
                   </div>
                   <span className="badge badge-warning" style={{ fontWeight: 700 }}>Acción Requerida</span>
                 </div>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').map(c => (
+                  {creditos.filter(c => isPendingApproval(c.estado)).map(c => (
                     <div key={c.id} style={{
                       display: 'flex',
                       justifyContent: 'space-between',
@@ -3516,15 +3516,15 @@ function App() {
             onClick={() => setActiveTab('aprobaciones')}
             style={{ position: 'relative' }}
           >
-            <CheckCircle2 size={20} style={{ color: creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length > 0 ? '#f59e0b' : 'inherit' }} />
+            <CheckCircle2 size={20} style={{ color: creditos.filter(c => isPendingApproval(c.estado)).length > 0 ? '#f59e0b' : 'inherit' }} />
             <span>Aprobación</span>
-            {creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length > 0 && (
+            {creditos.filter(c => isPendingApproval(c.estado)).length > 0 && (
               <span style={{
                 position: 'absolute', top: '2px', right: '8px',
                 background: '#f59e0b', color: '#0b0f19', fontWeight: 800,
                 fontSize: '0.65rem', padding: '1px 6px', borderRadius: '10px'
               }}>
-                {creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length}
+                {creditos.filter(c => isPendingApproval(c.estado)).length}
               </span>
             )}
           </button>
