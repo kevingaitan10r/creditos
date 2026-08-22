@@ -106,6 +106,8 @@ function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>((localStorage.getItem('zenu_theme') as 'dark' | 'light') || 'dark');
   const [showQuickActionsMenu, setShowQuickActionsMenu] = useState(false);
   const [showAdminSubmenu, setShowAdminSubmenu] = useState(false);
+  const [adminLeftView, setAdminLeftView] = useState<'hojas' | 'rutas'>('hojas');
+  const [adminRouteFilter, setAdminRouteFilter] = useState<string>('ALL');
   
   // Offline synchronization states
   const [offlinePayments, setOfflinePayments] = useState<any[]>(() => {
@@ -1922,40 +1924,151 @@ function App() {
 
             {/* Split Panel */}
             <div className="section-container">
-              {/* Left Column: Route status (Admin) OR Route client list (Cobrador) */}
+              {/* Left Column: Hojas de Cobro (Clientes con GPS) OR Estado de Rutas */}
               <div className="panel">
                 {user?.rol === 'ADMIN' ? (
                   <>
-                    <div className="panel-header">
-                      <h2 className="panel-title">
+                    <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                      <h2 className="panel-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <Compass size={20} className="card-title-icon" style={{ color: 'var(--color-primary)' }} />
-                        Estado de Rutas Diarias
+                        {adminLeftView === 'hojas' ? 'Hojas de Cobro: Clientes de Hoy' : 'Estado de Rutas Diarias'}
                       </h2>
-                    </div>
-                    <div>
-                      {rutas.map(ruta => (
-                        <div className="route-card" key={ruta.id}>
-                          <div className="route-header">
-                            <span className="route-name">{ruta.nombre_ruta}</span>
-                            <span className="badge badge-neutral">{ruta.cobrador}</span>
-                          </div>
-                          <div className="progress-bar-container">
-                            <div
-                              className="progress-bar"
-                              style={{
-                                width: `${ruta.progress}%`,
-                                backgroundColor: ruta.progress > 50 ? 'var(--color-success)' : 'var(--color-warning)'
-                              }}
-                            ></div>
-                          </div>
-                          <div className="route-stats">
-                            <span>Recaudado: ${ruta.recaudado.toLocaleString()} COP</span>
-                            <span>Esperado: ${ruta.totalEsperado.toLocaleString()} COP</span>
-                            <span>Progreso: {ruta.progress}%</span>
-                          </div>
+
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        {adminLeftView === 'hojas' && (
+                          <select
+                            className="form-control"
+                            value={adminRouteFilter}
+                            onChange={(e) => setAdminRouteFilter(e.target.value)}
+                            style={{ padding: '4px 8px', fontSize: '0.78rem', height: 'auto', background: 'rgba(15, 23, 42, 0.8)', borderColor: 'rgba(255, 255, 255, 0.12)' }}
+                          >
+                            <option value="ALL">Todas las Rutas</option>
+                            {rutas.map(r => (
+                              <option key={r.id} value={r.nombre_ruta}>{r.nombre_ruta}</option>
+                            ))}
+                          </select>
+                        )}
+                        <div style={{ display: 'flex', gap: '4px', background: 'rgba(255, 255, 255, 0.05)', padding: '2px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                          <button
+                            type="button"
+                            onClick={() => setAdminLeftView('hojas')}
+                            style={{
+                              background: adminLeftView === 'hojas' ? '#10b981' : 'transparent',
+                              color: adminLeftView === 'hojas' ? '#ffffff' : 'var(--text-secondary)',
+                              border: 'none', borderRadius: '6px', padding: '4px 10px', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer'
+                            }}
+                          >
+                            📋 Hojas de Cobro
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setAdminLeftView('rutas')}
+                            style={{
+                              background: adminLeftView === 'rutas' ? '#10b981' : 'transparent',
+                              color: adminLeftView === 'rutas' ? '#ffffff' : 'var(--text-secondary)',
+                              border: 'none', borderRadius: '6px', padding: '4px 10px', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer'
+                            }}
+                          >
+                            🗺️ Estado Rutas
+                          </button>
                         </div>
-                      ))}
+                      </div>
                     </div>
+
+                    {adminLeftView === 'rutas' ? (
+                      <div>
+                        {rutas.map(ruta => (
+                          <div className="route-card" key={ruta.id}>
+                            <div className="route-header">
+                              <span className="route-name">{ruta.nombre_ruta}</span>
+                              <span className="badge badge-neutral">{ruta.cobrador}</span>
+                            </div>
+                            <div className="progress-bar-container">
+                              <div
+                                className="progress-bar"
+                                style={{
+                                  width: `${ruta.progress}%`,
+                                  backgroundColor: ruta.progress > 50 ? 'var(--color-success)' : 'var(--color-warning)'
+                                }}
+                              ></div>
+                            </div>
+                            <div className="route-stats">
+                              <span>Recaudado: ${ruta.recaudado.toLocaleString()} COP</span>
+                              <span>Esperado: ${ruta.totalEsperado.toLocaleString()} COP</span>
+                              <span>Progreso: {ruta.progress}%</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      /* Admin Hojas de Cobro (Misma vista que cobrador pero para todas o ruta seleccionada) */
+                      <div className="table-wrapper">
+                        <table className="custom-table">
+                          <thead>
+                            <tr>
+                              <th>Cliente</th>
+                              <th>Dirección de Visita</th>
+                              <th>Valor a Cobrar</th>
+                              <th>Estado de Pago</th>
+                            </tr>
+                          </thead>
+                          <tbody style={{ verticalAlign: 'middle' }}>
+                            {activeCredits
+                              .filter(cr => cr.estado === 'ACTIVO' || cr.estado === 'MORA')
+                              .filter(cr => adminRouteFilter === 'ALL' || cr.rutaNombre === adminRouteFilter)
+                              .map(cr => {
+                                const hasPaid = paidTodayNames.includes(cr.clienteNombre);
+                                const clientInfo = clientes.find(c => c.documento === cr.documento || c.nombre === cr.clienteNombre);
+                                const destUrl = clientInfo?.lat && clientInfo?.lng 
+                                  ? `${clientInfo.lat},${clientInfo.lng}`
+                                  : encodeURIComponent(clientInfo?.direccion || cr.clienteNombre);
+
+                                return (
+                                  <tr key={cr.id}>
+                                    <td style={{ fontWeight: 600 }}>{cr.clienteNombre}</td>
+                                    <td style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                      {clientInfo?.direccion || 'No registrada'}
+                                    </td>
+                                    <td style={{ fontWeight: 700, color: 'var(--color-success)' }}>
+                                      ${cr.valorCuota.toLocaleString()} COP
+                                    </td>
+                                    <td>
+                                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                                        <span className={`badge ${hasPaid ? 'badge-success' : 'badge-warning'}`}>
+                                          {hasPaid ? 'Cobrado' : 'Pendiente'}
+                                        </span>
+                                        {!hasPaid && (
+                                          <a 
+                                            href={`https://www.google.com/maps/dir/?api=1&destination=${destUrl}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="btn btn-secondary btn-sm"
+                                            style={{ 
+                                              fontSize: '0.72rem', padding: '3px 8px', borderRadius: '6px', 
+                                              textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px',
+                                              background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)',
+                                              fontWeight: 700
+                                            }}
+                                          >
+                                            📍 Cómo llegar
+                                          </a>
+                                        )}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            {activeCredits.filter(cr => cr.estado === 'ACTIVO' || cr.estado === 'MORA').length === 0 && (
+                              <tr>
+                                <td colSpan={4} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+                                  No hay clientes con créditos activos en la cartera.
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                   </>
                 ) : (
                   // Cobrador: Listado de cobro de clientes de su ruta
