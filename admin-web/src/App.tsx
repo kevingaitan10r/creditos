@@ -1919,7 +1919,7 @@ function App() {
             </div>
 
             {/* Split Panel */}
-            <div className="section-container">
+            <div className="section-container layout-dashboard">
               {/* Left Column: Hojas de Cobro (Clientes con GPS) OR Estado de Rutas */}
               <div className="panel">
                 {user?.rol === 'ADMIN' ? (
@@ -2291,7 +2291,7 @@ function App() {
             >
               ← Volver a Ajustes
             </button>
-            <div className="section-container" style={{ gridTemplateColumns: '1fr 2fr' }}>
+            <div className="section-container layout-crud">
               <div className="panel">
                 <div className="panel-header">
                   <h2 className="panel-title">
@@ -2428,7 +2428,7 @@ function App() {
             >
               ← Volver a Ajustes
             </button>
-            <div className="section-container" style={{ gridTemplateColumns: '1fr 2fr' }}>
+            <div className="section-container layout-crud">
             <div className="panel">
               <div className="panel-header">
                 <h2 className="panel-title">
@@ -2582,7 +2582,7 @@ function App() {
         )}
 
         {activeTab === 'clientes' && (
-          <div className="section-container" style={{ gridTemplateColumns: '1fr 2fr' }}>
+          <div className="section-container layout-crud">
             <div className="panel">
               <div className="panel-header">
                 <h2 className="panel-title">
@@ -2757,7 +2757,7 @@ function App() {
         )}
 
         {activeTab === 'creditos' && (
-          <div className="section-container" style={{ gridTemplateColumns: '1fr 2fr' }}>
+          <div className="section-container layout-crud">
             <div className="panel">
               <div className="panel-header">
                 <h2 className="panel-title">
@@ -3157,7 +3157,7 @@ function App() {
         )}
 
         {activeTab === 'pagos' && (
-          <div className="section-container" style={{ gridTemplateColumns: '1fr 2fr' }}>
+          <div className="section-container layout-crud">
             <div className="panel">
               <div className="panel-header">
                 <h2 className="panel-title">Registrar Abono Diario</h2>
@@ -3331,7 +3331,7 @@ function App() {
         )}
 
         {activeTab === 'gastos' && (
-          <div className="section-container" style={{ gridTemplateColumns: '1fr 2fr' }}>
+          <div className="section-container layout-crud">
             <div className="panel">
               <div className="panel-header">
                 <h2 className="panel-title">Nuevo Gasto de Ruta</h2>
@@ -3445,7 +3445,7 @@ function App() {
             >
               ← Volver a Ajustes
             </button>
-            <div className="section-container" style={{ gridTemplateColumns: '1fr 2fr' }}>
+            <div className="section-container layout-crud">
             <div className="panel">
               <div className="panel-header">
                 <h2 className="panel-title">Cuadre de Caja Diario</h2>

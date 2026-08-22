@@ -472,8 +472,17 @@ body::after {
 }
 
 @media (min-width: 1025px) {
-  .section-container:has(.table-wrapper) {
+  /* Dashboard layout: Table on left (2fr), Live Map on right (1fr) */
+  .section-container.layout-dashboard,
+  .section-container:has(.map-element-container) {
     grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr) !important;
+  }
+
+  /* CRUD layout (Clientes, Créditos, Gastos, Rutas, Usuarios, Liquidaciones): Compact Form on left (340px), Wide Table on right */
+  .section-container.layout-crud,
+  .section-container[style*="1fr 2fr"],
+  .section-container:has(form) {
+    grid-template-columns: 340px minmax(0, 1fr) !important;
   }
 }
 
