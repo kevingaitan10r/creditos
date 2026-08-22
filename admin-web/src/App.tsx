@@ -1580,16 +1580,27 @@ function App() {
                     </div>
                   </div>
 
-                  <div className="card success">
-                    <div className="card-header-icon">
-                      <span className="card-title">Recaudado Hoy</span>
-                      <div className="card-icon-wrapper">
-                        <TrendingUp size={20} />
+                  <div className="card success" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+                    <div style={{ flex: 1 }}>
+                      <div className="card-header-icon" style={{ marginBottom: '12px' }}>
+                        <span className="card-title">Recaudado Hoy</span>
+                        <div className="card-icon-wrapper">
+                          <TrendingUp size={20} />
+                        </div>
+                      </div>
+                      <div className="card-value" style={{ fontSize: '1.8rem' }}>${stats.totalRecaudadoHoy.toLocaleString()}</div>
+                      <div className="card-trend up">
+                        <span>Actualizado en tiempo real</span>
                       </div>
                     </div>
-                    <div className="card-value">${stats.totalRecaudadoHoy.toLocaleString()} COP</div>
-                    <div className="card-trend up">
-                      <span>Actualizado en tiempo real</span>
+                    <div style={{ position: 'relative', width: '64px', height: '64px', flexShrink: 0 }}>
+                      <svg viewBox="0 0 36 36" style={{ width: '64px', height: '64px', transform: 'rotate(-90deg)' }}>
+                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="4"></path>
+                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#10b981" strokeDasharray={`${Math.min(100, Math.round((stats.totalRecaudadoHoy / (stats.totalCapitalEnCalle || 1)) * 100) || 75)}, 100`} strokeLinecap="round" strokeWidth="4"></path>
+                      </svg>
+                      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.8rem', color: '#10b981' }}>
+                        {Math.min(100, Math.round((stats.totalRecaudadoHoy / (stats.totalCapitalEnCalle || 1)) * 100) || 75)}%
+                      </div>
                     </div>
                   </div>
 

@@ -394,7 +394,7 @@ body::after {
   transition: var(--transition-smooth);
 }
 
-.card.primary::before { background: linear-gradient(90deg, var(--color-primary), #a855f7); }
+.card.primary::before { background: linear-gradient(90deg, var(--color-primary), #059669); }
 .card.success::before { background: linear-gradient(90deg, var(--color-success), #34d399); }
 .card.warning::before { background: linear-gradient(90deg, var(--color-warning), #fbbf24); }
 .card.danger::before { background: linear-gradient(90deg, var(--color-danger), #f87171); }
@@ -405,10 +405,10 @@ body::after {
   border-color: rgba(255, 255, 255, 0.12);
 }
 
-.card.primary:hover { box-shadow: 0 20px 40px -15px rgba(99, 102, 241, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.1); }
-.card.success:hover { box-shadow: 0 20px 40px -15px rgba(16, 185, 129, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.1); }
-.card.warning:hover { box-shadow: 0 20px 40px -15px rgba(245, 158, 11, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.1); }
-.card.danger:hover { box-shadow: 0 20px 40px -15px rgba(239, 68, 68, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.1); }
+.card.primary:hover { box-shadow: 0 20px 40px -15px rgba(16, 185, 129, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.1); }
+.card.success:hover { box-shadow: 0 20px 40px -15px rgba(16, 185, 129, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.1); }
+.card.warning:hover { box-shadow: 0 20px 40px -15px rgba(245, 158, 11, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.1); }
+.card.danger:hover { box-shadow: 0 20px 40px -15px rgba(239, 68, 68, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.1); }
 
 .card-header-icon {
   display: flex;
@@ -431,7 +431,7 @@ body::after {
   transform: scale(1.1) rotate(5deg);
 }
 
-.card.primary .card-icon-wrapper { background-color: var(--color-primary-glow); color: #818cf8; }
+.card.primary .card-icon-wrapper { background-color: var(--color-primary-glow); color: #10b981; }
 .card.success .card-icon-wrapper { background-color: var(--color-success-glow); color: #34d399; }
 .card.warning .card-icon-wrapper { background-color: var(--color-warning-glow); color: #fbbf24; }
 .card.danger .card-icon-wrapper { background-color: var(--color-danger-glow); color: #f87171; }
