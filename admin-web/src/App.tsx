@@ -45,7 +45,7 @@ const getApiUrl = () => {
 
 const API_URL = getApiUrl();
 
-type TabType = 'dashboard' | 'rutas' | 'clientes' | 'creditos' | 'pagos' | 'gastos' | 'liquidaciones' | 'usuarios' | 'configuraciones';
+type TabType = 'dashboard' | 'rutas' | 'clientes' | 'creditos' | 'pagos' | 'gastos' | 'liquidaciones' | 'usuarios' | 'configuraciones' | 'aprobaciones';
 
 function App() {
   const [token, setToken] = useState<string | null>(localStorage.getItem('zenu_token'));
@@ -1492,6 +1492,31 @@ function App() {
           {user?.rol === 'ADMIN' && (
             <li>
               <button
+                className={`nav-item ${activeTab === 'aprobaciones' ? 'active' : ''}`}
+                onClick={() => setActiveTab('aprobaciones')}
+              >
+                <CheckCircle2 className="nav-icon" style={{ color: creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length > 0 ? '#f59e0b' : 'inherit' }} />
+                <span>Aprobaciones</span>
+                {creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length > 0 && (
+                  <span style={{
+                    marginLeft: 'auto',
+                    background: '#f59e0b',
+                    color: '#0b0f19',
+                    fontWeight: 800,
+                    fontSize: '0.72rem',
+                    padding: '2px 8px',
+                    borderRadius: '10px'
+                  }}>
+                    {creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length}
+                  </span>
+                )}
+              </button>
+            </li>
+          )}
+          
+          {user?.rol === 'ADMIN' && (
+            <li>
+              <button
                 className={`nav-item ${activeTab === 'rutas' ? 'active' : ''}`}
                 onClick={() => setActiveTab('rutas')}
               >
@@ -2701,7 +2726,7 @@ function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {creditos.map(c => (
+                    {creditos.filter(c => c.estado !== 'PENDIENTE_APROBACION').map(c => (
                       <tr key={c.id}>
                         <td data-label="Cliente" className="allow-wrap">
                           <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -2815,6 +2840,99 @@ function App() {
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'aprobaciones' && (
+          <div className="section-container" style={{ flexDirection: 'column', gap: '20px' }}>
+            <div className="panel" style={{ background: 'rgba(15, 23, 42, 0.75)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+              <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                <h2 className="panel-title" style={{ color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.2rem' }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '28px' }}>rule</span>
+                  Solicitudes de Préstamo Pendientes de Aprobación ({creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length})
+                </h2>
+                <span className="badge badge-warning" style={{ fontWeight: 700, padding: '6px 12px' }}>
+                  Módulo de Aprobaciones ADMIN
+                </span>
+              </div>
+
+              {creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-secondary)' }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '56px', color: '#10b981', display: 'block', marginBottom: '12px' }}>verified</span>
+                  <h3 style={{ color: 'white', fontSize: '1.3rem', marginBottom: '6px', fontWeight: 700 }}>¡Todo al día!</h3>
+                  <p style={{ fontSize: '0.95rem' }}>No tienes solicitudes de préstamo pendientes por revisar en este momento.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '20px', marginTop: '20px' }}>
+                  {creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').map(c => (
+                    <div key={c.id} style={{
+                      background: 'rgba(30, 41, 59, 0.7)',
+                      border: '1px solid rgba(245, 158, 11, 0.35)',
+                      borderRadius: '20px',
+                      padding: '20px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      gap: '16px',
+                      boxShadow: '0 10px 30px -5px rgba(0, 0, 0, 0.6)'
+                    }}>
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                          <div>
+                            <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#f59e0b', fontWeight: 700, letterSpacing: '0.5px' }}>Solicitud #{c.id}</span>
+                            <h4 style={{ color: 'white', fontSize: '1.2rem', fontWeight: 800, margin: '2px 0 0 0' }}>{c.clienteNombre}</h4>
+                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Documento: {c.documento || 'No especificado'}</span>
+                          </div>
+                          <span className="badge badge-warning" style={{ fontWeight: 700, fontSize: '0.75rem' }}>
+                            PENDIENTE
+                          </span>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.9rem', background: 'rgba(15, 23, 42, 0.85)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: 'var(--text-secondary)' }}>Monto Solicitado:</span>
+                            <strong style={{ color: '#10b981', fontSize: '1.1rem' }}>${c.monto.toLocaleString()} COP</strong>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: 'var(--text-secondary)' }}>Tasa Interés:</span>
+                            <strong style={{ color: 'white' }}>{c.interes}%</strong>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: 'var(--text-secondary)' }}>Total a Pagar:</span>
+                            <strong style={{ color: 'white' }}>${c.totalAPagar.toLocaleString()} COP</strong>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: 'var(--text-secondary)' }}>Cuota ({c.frecuencia}):</span>
+                            <strong style={{ color: '#f59e0b' }}>${c.valorCuota.toLocaleString()} COP</strong>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '6px', borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                            <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>Fecha Solicitud:</span>
+                            <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>{c.fecha}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '10px', paddingTop: '12px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                        <button
+                          onClick={() => handleApproveCredit(c.id)}
+                          className="btn btn-primary"
+                          style={{ flex: 1, background: '#10b981', borderColor: '#10b981', color: 'white', fontWeight: 800, padding: '10px', justifyContent: 'center', fontSize: '0.9rem' }}
+                        >
+                          ✅ Aprobar Préstamo
+                        </button>
+                        <button
+                          onClick={() => handleRejectCredit(c.id)}
+                          className="btn btn-danger"
+                          style={{ flex: 1, background: '#ef4444', borderColor: '#ef4444', color: 'white', fontWeight: 800, padding: '10px', justifyContent: 'center', fontSize: '0.9rem' }}
+                        >
+                          ❌ Rechazar
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
