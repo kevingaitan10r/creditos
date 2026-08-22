@@ -1720,22 +1720,45 @@ function App() {
                             <th>Estado de Pago</th>
                           </tr>
                         </thead>
-                        <tbody>
+                        <tbody style={{ verticalAlign: 'middle' }}>
                           {routeCredits.map(cr => {
                             const hasPaid = paidTodayNames.includes(cr.clienteNombre);
+                            const clientInfo = clientes.find(c => c.documento === cr.documento || c.nombre === cr.clienteNombre);
+                            const destUrl = clientInfo?.lat && clientInfo?.lng 
+                              ? `${clientInfo.lat},${clientInfo.lng}`
+                              : encodeURIComponent(clientInfo?.direccion || cr.clienteNombre);
+
                             return (
                               <tr key={cr.id}>
                                 <td style={{ fontWeight: 600 }}>{cr.clienteNombre}</td>
                                 <td style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                                  {clientes.find(c => c.documento === cr.documento)?.direccion || 'No registrada'}
+                                  {clientInfo?.direccion || 'No registrada'}
                                 </td>
                                 <td style={{ fontWeight: 700, color: 'var(--color-success)' }}>
                                   ${cr.valorCuota.toLocaleString()} COP
                                 </td>
                                 <td>
-                                  <span className={`badge ${hasPaid ? 'badge-success' : 'badge-warning'}`}>
-                                    {hasPaid ? 'Cobrado' : 'Pendiente'}
-                                  </span>
+                                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                                    <span className={`badge ${hasPaid ? 'badge-success' : 'badge-warning'}`}>
+                                      {hasPaid ? 'Cobrado' : 'Pendiente'}
+                                    </span>
+                                    {!hasPaid && (
+                                      <a 
+                                        href={`https://www.google.com/maps/dir/?api=1&destination=${destUrl}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="btn btn-secondary btn-sm"
+                                        style={{ 
+                                          fontSize: '0.72rem', padding: '3px 8px', borderRadius: '6px', 
+                                          textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px',
+                                          background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)',
+                                          fontWeight: 700
+                                        }}
+                                      >
+                                        📍 Cómo llegar
+                                      </a>
+                                    )}
+                                  </div>
                                 </td>
                               </tr>
                             );
@@ -1806,7 +1829,7 @@ function App() {
                   <div 
                     ref={mapContainerRef} 
                     className="map-element-container"
-                    style={{ height: user?.rol === 'COBRADOR' ? '200px' : '450px' }}
+                    style={{ height: user?.rol === 'COBRADOR' ? '180px' : '280px' }}
                   ></div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -1840,19 +1863,47 @@ function App() {
                         </div>
                       ))
                     ) : (
-                      pendingCredits.length > 0 ? (
-                        <div style={{ padding: '12px', backgroundColor: 'rgba(245, 158, 11, 0.05)', border: '1px solid rgba(245, 158, 11, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <span style={{ fontWeight: 700, color: 'var(--color-warning)', fontSize: '0.9rem' }}>
-                            {pendingCredits[0].clienteNombre}
-                          </span>
-                          <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                            Dirección: {clientes.find(c => c.documento === pendingCredits[0].documento)?.direccion || 'No disponible'}
-                          </span>
-                          <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>
-                            Cuota a Cobrar: ${pendingCredits[0].valorCuota.toLocaleString()} COP
-                          </span>
-                        </div>
-                      ) : (
+                      pendingCredits.length > 0 ? (() => {
+                        const nextCli = clientes.find(c => c.documento === pendingCredits[0].documento || c.nombre === pendingCredits[0].clienteNombre);
+                        const nextDestUrl = nextCli?.lat && nextCli?.lng 
+                          ? `${nextCli.lat},${nextCli.lng}`
+                          : encodeURIComponent(nextCli?.direccion || pendingCredits[0].clienteNombre);
+
+                        return (
+                          <div style={{ padding: '14px', backgroundColor: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ fontWeight: 700, color: 'var(--color-warning)', fontSize: '0.95rem' }}>
+                                👉 {pendingCredits[0].clienteNombre}
+                              </span>
+                              <span style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '10px', background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', fontWeight: 700 }}>
+                                Próxima Parada
+                              </span>
+                            </div>
+                            <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                              📍 Dirección: {nextCli?.direccion || 'No disponible'}
+                            </span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px', paddingTop: '8px', borderTop: '1px solid rgba(245, 158, 11, 0.15)' }}>
+                              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                                Cuota: ${pendingCredits[0].valorCuota.toLocaleString()} COP
+                              </span>
+                              <a 
+                                href={`https://www.google.com/maps/dir/?api=1&destination=${nextDestUrl}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn btn-secondary btn-sm"
+                                style={{ 
+                                  fontSize: '0.78rem', padding: '6px 12px', borderRadius: '8px', 
+                                  textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px',
+                                  background: 'linear-gradient(135deg, #10b981, #059669)', color: 'white', border: 'none',
+                                  fontWeight: 700, boxShadow: '0 0 15px rgba(16, 185, 129, 0.4)'
+                                }}
+                              >
+                                🧭 Cómo llegar (GPS)
+                              </a>
+                            </div>
+                          </div>
+                        );
+                      })() : (
                         <span style={{ fontSize: '0.8rem', color: 'var(--color-success)', fontWeight: 600 }}>
                           🎉 ¡Felicidades! Completaste todos los cobros de tu ruta hoy.
                         </span>
