@@ -912,12 +912,51 @@ function App() {
     }
   };
 
+  const handleApproveCredit = async (creditId: number) => {
+    try {
+      const res = await fetchWithAuth(`${API_URL}/creditos/${creditId}/aprobar`, {
+        method: 'PUT'
+      });
+      if (res.ok) {
+        alert('✅ Crédito aprobado exitosamente.');
+        loadAppData();
+      } else {
+        const data = await res.json();
+        alert(data.message || 'Error al aprobar el crédito.');
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleRejectCredit = async (creditId: number) => {
+    if (!window.confirm('¿Estás seguro de rechazar esta solicitud de crédito?')) return;
+    try {
+      const res = await fetchWithAuth(`${API_URL}/creditos/${creditId}/rechazar`, {
+        method: 'PUT'
+      });
+      if (res.ok) {
+        alert('❌ Crédito rechazado.');
+        loadAppData();
+      } else {
+        const data = await res.json();
+        alert(data.message || 'Error al rechazar el crédito.');
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const handleAddCredit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCredit.clienteId || !newCredit.monto || !newCredit.tasa || !newCredit.cuotas) {
       alert('Todos los campos son obligatorios.');
       return;
     }
+
+    const selectedClient = clientes.find(c => String(c.id) === String(newCredit.clienteId) || String(c.id_cliente) === String(newCredit.clienteId));
+    const clientName = selectedClient ? selectedClient.nombre : 'Cliente';
+
     try {
       const res = await fetchWithAuth(`${API_URL}/creditos`, {
         method: 'POST',
@@ -929,11 +968,32 @@ function App() {
           cuotas: Number(newCredit.cuotas)
         })
       });
+      const data = await res.json();
       if (res.ok) {
         loadAppData();
+        if (data.requiereAprobacion || user?.rol === 'COBRADOR') {
+          const totalCalculado = Math.round(Number(newCredit.monto) + (Number(newCredit.monto) * (Number(newCredit.tasa) / 100)));
+          const cuotaCalculada = Math.round(totalCalculado / Number(newCredit.cuotas));
+          const msg = 
+            `⚠️ *NUEVA SOLICITUD DE PRÉSTAMO - ZENU* ⚠️\n\n` +
+            `*Cobrador:* ${user?.nombre}\n` +
+            `*Cliente:* ${clientName}\n` +
+            `*Monto:* $${Number(newCredit.monto).toLocaleString()} COP\n` +
+            `*Tasa Interés:* ${newCredit.tasa}%\n` +
+            `*Total a Pagar:* $${totalCalculado.toLocaleString()} COP\n` +
+            `*Cuota:* $${cuotaCalculada.toLocaleString()} COP (${newCredit.frecuencia})\n\n` +
+            `*Por favor ingresa al sistema Zenu para Aprobar o Rechazar el préstamo.*`;
+
+          const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+          
+          if (window.confirm('⚠️ Solicitud de crédito enviada al Administrador para su aprobación.\n\n¿Deseas enviar una notificación por WhatsApp al Administrador ahora mismo?')) {
+            window.open(waUrl, '_blank');
+          }
+        } else {
+          alert('✅ Crédito creado y activado exitosamente.');
+        }
       } else {
-        const data = await res.json();
-        alert(data.message || 'Error al desembolsar crédito.');
+        alert(data.message || 'Error al procesar el crédito.');
       }
     } catch (error) {
       console.error(error);
@@ -1563,6 +1623,67 @@ function App() {
         {/* Dynamic Views */}
         {activeTab === 'dashboard' && (
           <>
+            {/* Banner Alerta de Solicitudes de Crédito Pendientes (Solo ADMIN) */}
+            {user?.rol === 'ADMIN' && creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length > 0 && (
+              <div style={{
+                background: 'rgba(245, 158, 11, 0.12)',
+                border: '1px solid rgba(245, 158, 11, 0.35)',
+                borderRadius: '16px',
+                padding: '16px 20px',
+                marginBottom: '24px',
+                boxShadow: '0 0 20px rgba(245, 158, 11, 0.15)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span className="material-symbols-outlined" style={{ color: '#f59e0b', fontSize: '24px' }}>warning</span>
+                    <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#f59e0b' }}>
+                      Solicitudes de Préstamo Pendientes de Aprobación ({creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length})
+                    </h3>
+                  </div>
+                  <span className="badge badge-warning" style={{ fontWeight: 700 }}>Acción Requerida</span>
+                </div>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').map(c => (
+                    <div key={c.id} style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      background: 'rgba(15, 23, 42, 0.85)',
+                      padding: '12px 16px',
+                      borderRadius: '12px',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      flexWrap: 'wrap',
+                      gap: '8px'
+                    }}>
+                      <div>
+                        <span style={{ fontWeight: 700, color: '#ffffff', fontSize: '0.95rem' }}>{c.clienteNombre}</span>
+                        <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginLeft: '12px' }}>
+                          Monto: <strong style={{ color: '#10b981' }}>${c.monto.toLocaleString()} COP</strong> • Cuota: ${c.valorCuota.toLocaleString()} ({c.frecuencia})
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button 
+                          onClick={() => handleApproveCredit(c.id)}
+                          className="btn btn-primary btn-sm"
+                          style={{ background: '#10b981', borderColor: '#10b981', color: 'white', fontWeight: 700, padding: '6px 14px' }}
+                        >
+                          ✅ Aprobar Préstamo
+                        </button>
+                        <button 
+                          onClick={() => handleRejectCredit(c.id)}
+                          className="btn btn-danger btn-sm"
+                          style={{ background: '#ef4444', borderColor: '#ef4444', color: 'white', fontWeight: 700, padding: '6px 14px' }}
+                        >
+                          ❌ Rechazar
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Cards Grid - Adaptada para ADMIN y COBRADOR */}
             <div className="dashboard-grid">
               {user?.rol === 'ADMIN' ? (
@@ -2603,15 +2724,57 @@ function App() {
                         </td>
                         <td data-label="Cuota" style={{ fontWeight: 600 }}>${c.valorCuota.toLocaleString()}</td>
                         <td data-label="Estado">
-                          <span className={`badge ${c.estado === 'PAGADO' ? 'badge-success' :
-                            c.estado === 'MORA' ? 'badge-danger' : 'badge-neutral'
-                            }`}>
-                            {c.estado}
+                          <span className={`badge ${
+                            c.estado === 'PAGADO' ? 'badge-success' :
+                            c.estado === 'MORA' ? 'badge-danger' :
+                            c.estado === 'PENDIENTE_APROBACION' ? 'badge-warning' : 'badge-neutral'
+                          }`}>
+                            {c.estado === 'PENDIENTE_APROBACION' ? 'PENDIENTE APROBACIÓN' : c.estado}
                           </span>
                         </td>
                         <td data-label="Acciones">
                           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                            {c.estado !== 'PAGADO' && (
+                            {c.estado === 'PENDIENTE_APROBACION' && user?.rol === 'ADMIN' && (
+                              <>
+                                <button
+                                  type="button"
+                                  className="btn btn-primary btn-sm"
+                                  onClick={() => handleApproveCredit(c.id)}
+                                  style={{ background: '#10b981', borderColor: '#10b981', color: 'white', fontWeight: 700 }}
+                                >
+                                  ✅ Aprobar
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-danger btn-sm"
+                                  onClick={() => handleRejectCredit(c.id)}
+                                  style={{ background: '#ef4444', borderColor: '#ef4444', color: 'white', fontWeight: 700 }}
+                                >
+                                  ❌ Rechazar
+                                </button>
+                              </>
+                            )}
+
+                            {c.estado === 'PENDIENTE_APROBACION' && user?.rol === 'COBRADOR' && (
+                              <button
+                                type="button"
+                                className="btn btn-secondary btn-sm"
+                                onClick={() => {
+                                  const msg = 
+                                    `⚠️ *SOLICITUD PENDIENTE DE PRÉSTAMO - ZENU* ⚠️\n\n` +
+                                    `*Cliente:* ${c.clienteNombre}\n` +
+                                    `*Monto:* $${c.monto.toLocaleString()} COP\n` +
+                                    `*Cuota:* $${c.valorCuota.toLocaleString()} COP\n\n` +
+                                    `*Ingresa a Zenu para Aprobar o Rechazar.*`;
+                                  window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+                                }}
+                                style={{ borderColor: '#10b981', color: '#10b981', fontWeight: 600 }}
+                              >
+                                💬 WhatsApp Admin
+                              </button>
+                            )}
+
+                            {c.estado !== 'PAGADO' && c.estado !== 'PENDIENTE_APROBACION' && (
                               <button
                                 type="button"
                                 className="btn btn-secondary btn-sm"
@@ -2622,6 +2785,7 @@ function App() {
                                 <Share2 size={14} /> Recordatorio
                               </button>
                             )}
+
                             {user?.rol === 'ADMIN' && (
                               <>
                                 <button

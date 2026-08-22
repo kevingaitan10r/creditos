@@ -92,11 +92,14 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response) => {
       });
     }
 
+    const userRole = req.user?.rol;
+    const estadoInicial = userRole === 'COBRADOR' ? 'PENDIENTE_APROBACION' : 'ACTIVO';
+
     const queryStr = `
       INSERT INTO creditos 
         (id_cliente, monto_prestado, tasa_interes, total_a_pagar, saldo_pendiente, valor_cuota, frecuencia_pago, fecha_desembolso, estado) 
       VALUES 
-        ($1, $2, $3, $4, $5, $6, $7, $8, 'ACTIVO') 
+        ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
       RETURNING *;
     `;
 
@@ -108,17 +111,79 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response) => {
       saldoPendiente,
       valorCuota,
       frecuencia,
-      fechaDesembolso
+      fechaDesembolso,
+      estadoInicial
     ]);
 
     res.status(201).json({
       status: 'success',
-      data: result.rows[0]
+      data: result.rows[0],
+      requiereAprobacion: estadoInicial === 'PENDIENTE_APROBACION'
     });
   } catch (error: any) {
     res.status(500).json({
       status: 'error',
       message: 'Error al crear el crédito.',
+      error: error.message
+    });
+  }
+});
+
+// PUT /api/creditos/:id/aprobar (Solo ADMIN)
+router.put('/:id/aprobar', authenticateToken, requireRole(['ADMIN']), async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query(
+      `UPDATE creditos SET estado = 'ACTIVO' WHERE id_credito = $1 RETURNING *`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Crédito no encontrado.'
+      });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Crédito aprobado exitosamente.',
+      data: result.rows[0]
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Error al aprobar el crédito.',
+      error: error.message
+    });
+  }
+});
+
+// PUT /api/creditos/:id/rechazar (Solo ADMIN)
+router.put('/:id/rechazar', authenticateToken, requireRole(['ADMIN']), async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query(
+      `UPDATE creditos SET estado = 'RECHAZADO' WHERE id_credito = $1 RETURNING *`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Crédito no encontrado.'
+      });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Crédito rechazado.',
+      data: result.rows[0]
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Error al rechazar el crédito.',
       error: error.message
     });
   }
