@@ -1,32 +1,33 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --font-primary: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-primary: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-numeric: 'Inter', var(--font-primary);
   
-  /* Cosmic Dark Palette */
-  --bg-main: #060913;
-  --bg-sidebar: rgba(10, 15, 30, 0.75);
-  --bg-card: rgba(16, 23, 42, 0.45);
-  --bg-card-hover: rgba(22, 32, 58, 0.65);
-  --bg-input: rgba(9, 13, 28, 0.7);
-  --border-color: rgba(255, 255, 255, 0.05);
-  --border-focus: rgba(99, 102, 241, 0.5);
+  /* Obsidian Emerald Fintech Palette */
+  --bg-main: #0B0F19;
+  --bg-sidebar: rgba(15, 23, 42, 0.85);
+  --bg-card: rgba(17, 24, 39, 0.7);
+  --bg-card-hover: rgba(30, 41, 59, 0.85);
+  --bg-input: rgba(15, 23, 42, 0.9);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-focus: rgba(16, 185, 129, 0.5);
   
   /* Text styling */
   --text-primary: #f9fafb;
   --text-secondary: #9ca3af;
   --text-muted: #6b7280;
   
-  /* Glowing Brand Colors (HSL tailored for dark modes) */
-  --color-primary: #6366f1; /* Indigo */
-  --color-primary-hover: #4f46e5;
-  --color-primary-glow: rgba(99, 102, 241, 0.35);
+  /* Glowing Brand Colors (Emerald Primary, Gold Amber, Crimson Red) */
+  --color-primary: #10b981; /* Emerald Primary */
+  --color-primary-hover: #059669;
+  --color-primary-glow: rgba(16, 185, 129, 0.35);
   
   --color-success: #10b981; /* Emerald */
   --color-success-glow: rgba(16, 185, 129, 0.25);
-  --color-warning: #f59e0b; /* Amber */
+  --color-warning: #f59e0b; /* Amber Gold */
   --color-warning-glow: rgba(245, 158, 11, 0.25);
-  --color-danger: #ef4444; /* Rose/Red */
+  --color-danger: #ef4444; /* Crimson Red */
   --color-danger-glow: rgba(239, 68, 68, 0.25);
   
   /* Premium Glassmorphism & Shadows */
@@ -34,10 +35,11 @@
   --radius-sm: 8px;
   --radius-md: 14px;
   --radius-lg: 20px;
-  --shadow-premium: 0 20px 50px -12px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.05);
-  --shadow-neon-primary: 0 0 15px rgba(99, 102, 241, 0.4);
-  --shadow-neon-success: 0 0 15px rgba(16, 185, 129, 0.3);
-  --shadow-neon-danger: 0 0 15px rgba(239, 68, 68, 0.3);
+  --shadow-premium: 0 20px 50px -12px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.08);
+  --shadow-neon-primary: 0 0 20px rgba(16, 185, 129, 0.4);
+  --shadow-neon-success: 0 0 20px rgba(16, 185, 129, 0.3);
+  --shadow-neon-warning: 0 0 20px rgba(245, 158, 11, 0.3);
+  --shadow-neon-danger: 0 0 20px rgba(239, 68, 68, 0.3);
   
   --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   --transition-fast: all 0.2s ease;
@@ -1972,6 +1974,74 @@ body.light-theme .liquidation-value {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================
+   STITCH FINTECH REDESIGN UTILITY CLASSES
+   ========================================== */
+
+.map-grid-bg {
+  background-color: #0d1322;
+  background-image: 
+    linear-gradient(rgba(16, 185, 129, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(16, 185, 129, 0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+@keyframes radar-pulse {
+  0% { transform: scale(0.8); opacity: 0.9; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+.radar-ring {
+  animation: radar-pulse 2s infinite ease-out;
+}
+
+.btn-whatsapp {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.btn-whatsapp:hover {
+  background: rgba(16, 185, 129, 0.25);
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+  transform: translateY(-1px);
+}
+
+.shadow-glow-emerald {
+  box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.4);
+}
+
+.shadow-glow-amber {
+  box-shadow: 0 0 25px -5px rgba(245, 158, 11, 0.4);
+}
+
+.shadow-glow-crimson {
+  box-shadow: 0 0 25px -5px rgba(239, 68, 68, 0.4);
+}
+
+.offline-sync-bar {
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.9), rgba(217, 119, 6, 0.9));
+  color: #0b0f19;
+  padding: 8px 16px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
 
 
 

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Zenu Microfinance - UI Redesign Elite</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  
+  <!-- Material Symbols Outlined -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              500: '#10b981', // Emerald Primary
+              600: '#059669',
+              900: '#064e3b',
+              glow: 'rgba(16, 185, 129, 0.35)'
+            },
+            obsidian: {
+              base: '#0B0F19',
+              card: 'rgba(17, 24, 39, 0.7)',
+              border: 'rgba(255, 255, 255, 0.08)',
+              hover: 'rgba(31, 41, 55, 0.8)'
+            },
+            amberGold: {
+              500: '#f59e0b',
+              glow: 'rgba(245, 158, 11, 0.3)'
+            },
+            crimson: {
+              500: '#ef4444',
+              glow: 'rgba(239, 68, 68, 0.3)'
+            }
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            numeric: ['Inter', 'sans-serif']
+          },
+          boxShadow: {
+            'glow-emerald': '0 0 25px -5px rgba(16, 185, 129, 0.4)',
+            'glow-amber': '0 0 25px -5px rgba(245, 158, 11, 0.4)',
+            'glow-crimson': '0 0 25px -5px rgba(239, 68, 68, 0.4)',
+            'glass': '0 20px 50px -12px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.08)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #0B0F19; }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 99px; }
+    ::-webkit-scrollbar-thumb:hover { background: #10b981; }
+
+    /* Map Grid Background Effect */
+    .map-grid-bg {
+      background-color: #0d1322;
+      background-image: 
+        linear-gradient(rgba(16, 185, 129, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(16, 185, 129, 0.05) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+
+    /* Glassmorphism utility */
+    .glass-card {
+      background: rgba(17, 24, 39, 0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    .glass-card-hover {
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .glass-card-hover:hover {
+      background: rgba(30, 41, 59, 0.8);
+      border-color: rgba(16, 185, 129, 0.4);
+      transform: translateY(-2px);
+    }
+
+    /* Pulsing radar animation for collector */
+    @keyframes radar-pulse {
+      0% { transform: scale(0.8); opacity: 0.9; }
+      100% { transform: scale(2.4); opacity: 0; }
+    }
+    .radar-ring {
+      animation: radar-pulse 2s infinite ease-out;
+    }
+  </style>
+</head>
+
+<body class="bg-[#0B0F19] text-gray-100 font-sans antialiased min-h-screen selection:bg-brand-500/30 flex flex-col">
+
+  <!-- TOP BAR DE NAVEGACIÓN DE VISTAS (ADMIN DESKTOP vs COBRADOR MÓVIL) -->
+  <header class="sticky top-0 z-50 bg-[#0F172A]/90 backdrop-blur-xl border-b border-white/10 px-4 py-3 flex items-center justify-between shadow-2xl">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-500 flex items-center justify-center shadow-glow-emerald">
+        <span class="material-symbols-outlined text-white text-[22px]">payments</span>
+      </div>
+      <div>
+        <h1 class="font-extrabold text-lg text-white tracking-tight leading-none">ZENU <span class="text-brand-500 font-normal text-xs px-2 py-0.5 rounded-full bg-brand-500/10 border border-brand-500/30 ml-1">Fintech Pro</span></h1>
+        <p class="text-[11px] text-gray-400 font-numeric">Sistema de Gestión de Microcréditos</p>
+      </div>
+    </div>
+
+    <!-- VIEW SWITCHER BUTTONS -->
+    <div class="flex items-center bg-gray-900/90 p-1 rounded-xl border border-white/10">
+      <button id="btn-desktop-view" onclick="switchView('desktop')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-brand-500 text-white shadow-glow-emerald">
+        <span class="material-symbols-outlined text-[16px]">desktop_windows</span>
+        <span class="hidden sm:inline">Panel Admin (Desktop)</span>
+      </button>
+      <button id="btn-mobile-view" onclick="switchView('mobile')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-gray-400 hover:text-white">
+        <span class="material-symbols-outlined text-[16px]">smartphone</span>
+        <span class="hidden sm:inline">App Cobrador (Móvil)</span>
+      </button>
+    </div>
+
+    <!-- RIGHT STATUS BADGE -->
+    <div class="hidden md:flex items-center gap-3">
+      <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-medium">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>Servidor Online & Synchronized</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTAINER VISTA DESKTOP: ADMIN DASHBOARD -->
+  <div id="view-desktop" class="flex-1 flex flex-col md:flex-row overflow-hidden">
+    
+    <!-- SIDEBAR NAV -->
+    <aside class="w-full md:w-64 bg-[#0F172A]/70 backdrop-blur-xl border-r border-white/10 p-4 flex flex-col gap-6 shrink-0">
+      <!-- User Profile Card -->
+      <div class="flex items-center gap-3 p-3 rounded-xl bg-gray-900/60 border border-white/5">
+        <div class="relative w-10 h-10 rounded-full overflow-hidden border-2 border-brand-500">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Admin" class="w-full h-full object-cover"/>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-bold text-xs text-white">Carlos Mendoza</span>
+          <span class="text-[11px] text-brand-500 font-numeric">Administrador General</span>
+        </div>
+      </div>
+
+      <!-- Nav Links -->
+      <nav class="flex flex-col gap-1.5 text-xs font-semibold">
+        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-brand-500/15 text-brand-500 border border-brand-500/30 shadow-glow-emerald">
+          <span class="material-symbols-outlined text-[20px]">dashboard</span>
+          <span>Dashboard General</span>
+        </a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+          <span class="material-symbols-outlined text-[20px]">alt_route</span>
+          <span>Gestión de Rutas</span>
+        </a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+          <span class="material-symbols-outlined text-[20px]">credit_score</span>
+          <span>Cartera de Créditos</span>
+        </a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+          <span class="material-symbols-outlined text-[20px]">groups</span>
+          <span>Clientes & Riesgo</span>
+        </a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+          <span class="material-symbols-outlined text-[20px]">point_of_sale</span>
+          <span>Caja & Liquidaciones</span>
+        </a>
+      </nav>
+
+      <!-- Quick Action Button -->
+      <button class="w-full mt-auto py-2.5 px-4 rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-glow-emerald transition-all active:scale-95">
+        <span class="material-symbols-outlined text-[18px]">add_circle</span>
+        <span>Crear Nuevo Crédito</span>
+      </button>
+    </aside>
+
+    <!-- MAIN DASHBOARD CONTENT -->
+    <main class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+      
+      <!-- HEADER CON FILTROS Y BALANCE EN TIEMPO REAL -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gray-900/60 p-4 rounded-2xl border border-white/5">
+        <div>
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <span>Control de Operaciones</span>
+            <span class="text-xs font-normal text-gray-400 font-numeric">(Hoy: 21 de Agosto)</span>
+          </h2>
+          <p class="text-xs text-gray-400">Monitoreo activo de cobradores en ruta y recaudación diaria</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <!-- Selector de Ruta -->
+          <div class="relative">
+            <select class="appearance-none bg-gray-800 border border-white/10 rounded-xl px-4 py-2 pr-9 text-xs font-bold text-white focus:outline-none focus:border-brand-500 cursor-pointer">
+              <option>📍 Ruta 01 - Centro / San Antonio</option>
+              <option>📍 Ruta 02 - Norte / La Florida</option>
+              <option>📍 Ruta 03 - Sur / Mercado Central</option>
+            </select>
+            <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-[18px] pointer-events-none">expand_more</span>
+          </div>
+
+          <!-- Total Balance Pill -->
+          <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+            <span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+            <span class="text-xs text-gray-300">Recaudado Hoy:</span>
+            <span class="font-numeric font-extrabold text-sm text-emerald-400">$1,850.00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI CARDS GRID -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- KPI 1: Cartera Activa -->
+        <div class="glass-card glass-card-hover p-4 rounded-2xl relative overflow-hidden">
+          <div class="flex justify-between items-start">
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Cartera Total Activa</span>
+            <div class="w-9 h-9 rounded-xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-500">
+              <span class="material-symbols-outlined text-[20px]">monetization_on</span>
+            </div>
+          </div>
+          <div class="mt-3">
+            <div class="text-2xl font-extrabold text-white font-numeric tracking-tight">$45,280.00</div>
+            <div class="text-xs text-brand-500 font-medium flex items-center gap-1 mt-1">
+              <span class="material-symbols-outlined text-[14px]">trending_up</span>
+              <span>+4.2% esta semana</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI 2: Meta Esperada Hoy -->
+        <div class="glass-card glass-card-hover p-4 rounded-2xl relative overflow-hidden">
+          <div class="flex justify-between items-start">
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Meta del Día</span>
+            <div class="w-9 h-9 rounded-xl bg-amberGold-500/10 border border-amberGold-500/30 flex items-center justify-center text-amberGold-500">
+              <span class="material-symbols-outlined text-[20px]">event_available</span>
+            </div>
+          </div>
+          <div class="mt-3">
+            <div class="text-2xl font-extrabold text-white font-numeric tracking-tight">$2,400.00</div>
+            <div class="text-xs text-gray-400 font-medium mt-1">Distribuido en 65 cobros</div>
+          </div>
+        </div>
+
+        <!-- KPI 3: Avance Recaudación Anillo SVG -->
+        <div class="glass-card glass-card-hover p-4 rounded-2xl flex items-center justify-between relative overflow-hidden">
+          <div>
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Progreso Cobranza</span>
+            <div class="text-2xl font-extrabold text-white font-numeric tracking-tight mt-1">$1,850.00</div>
+            <div class="text-xs text-brand-500 font-medium mt-1">de $2,400 esperados</div>
+          </div>
+          <!-- Ring (77%) -->
+          <div class="relative w-16 h-16 shrink-0 flex items-center justify-center">
+            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+              <path class="text-gray-800" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="4"></path>
+              <path class="text-brand-500 filter drop-shadow-glow" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="77, 100" stroke-linecap="round" stroke-width="4"></path>
+            </svg>
+            <span class="absolute font-numeric font-bold text-xs text-brand-500">77%</span>
+          </div>
+        </div>
+
+        <!-- KPI 4: Índice de Mora -->
+        <div class="glass-card glass-card-hover p-4 rounded-2xl relative overflow-hidden border-crimson-500/20">
+          <div class="flex justify-between items-start">
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Índice de Mora (PAR)</span>
+            <div class="w-9 h-9 rounded-xl bg-crimson-500/10 border border-crimson-500/30 flex items-center justify-center text-crimson-500">
+              <span class="material-symbols-outlined text-[20px]">warning</span>
+            </div>
+          </div>
+          <div class="mt-3">
+            <div class="text-2xl font-extrabold text-white font-numeric tracking-tight">3.1%</div>
+            <div class="text-xs text-crimson-500 font-medium flex items-center gap-1 mt-1">
+              <span class="material-symbols-outlined text-[14px]">arrow_downward</span>
+              <span>-0.8% controlado</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN SPLIT SECTION: ROUTE MAP & LIVE TRANSACTIONS FEED -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[480px]">
+        
+        <!-- LEFT: MAPA INTERACTIVO DE RUTA (7 COLS) -->
+        <div class="lg:col-span-7 glass-card rounded-3xl overflow-hidden flex flex-col relative border border-white/10 min-h-[400px]">
+          <!-- Map Overlay Header -->
+          <div class="absolute top-0 left-0 right-0 p-4 z-20 flex justify-between items-center bg-gradient-to-b from-[#0F172A] via-[#0F172A]/70 to-transparent pointer-events-none">
+            <div>
+              <h3 class="font-bold text-sm text-white flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-brand-500 animate-ping"></span>
+                <span>Rastreo GPS de Cobrador en Vivo</span>
+              </h3>
+              <p class="text-xs text-gray-400">Ruta San Antonio • Cobrador: Juan Pérez</p>
+            </div>
+            <div class="pointer-events-auto flex items-center gap-2 px-3 py-1 rounded-full bg-gray-900/80 border border-white/10 text-xs text-gray-300 backdrop-blur-md">
+              <span class="material-symbols-outlined text-brand-500 text-[16px]">sensors</span>
+              <span>GPS Activo</span>
+            </div>
+          </div>
+
+          <!-- MAP VISUAL CONTAINER (CSS GRID PATTERN WITH PINS) -->
+          <div class="w-full flex-1 map-grid-bg relative overflow-hidden flex items-center justify-center">
+            
+            <!-- ROUTE PATH ANIMATED SVG LINE -->
+            <svg class="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M 120 100 Q 250 80 320 180 T 520 280 T 680 200" fill="none" stroke="#10b981" stroke-width="3" stroke-dasharray="8 6" opacity="0.8"/>
+            </svg>
+
+            <!-- PIN 1: PAGADO (VERDE) -->
+            <div class="absolute top-[22%] left-[20%] group cursor-pointer">
+              <div class="w-8 h-8 rounded-full bg-brand-500 text-white flex items-center justify-center shadow-glow-emerald border-2 border-gray-900 font-numeric font-bold text-xs transition-transform group-hover:scale-125">
+                ✓
+              </div>
+              <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-[11px] px-2 py-1 rounded-md whitespace-nowrap border border-white/10 z-30 shadow-xl">
+                Carlos Ruiz - $15.00 (Pagado 09:30 AM)
+              </div>
+            </div>
+
+            <!-- PIN 2: COBRADOR EN TIEMPO REAL (RADAR BLUE/GREEN) -->
+            <div class="absolute top-[42%] left-[45%] z-20 group cursor-pointer">
+              <div class="relative flex items-center justify-center">
+                <span class="absolute w-12 h-12 rounded-full bg-brand-500/30 radar-ring"></span>
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-brand-600 to-emerald-400 text-white flex items-center justify-center shadow-glow-emerald border-2 border-white">
+                  <span class="material-symbols-outlined text-[20px]">two_wheeler</span>
+                </div>
+              </div>
+              <div class="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-gray-900/90 text-brand-400 text-[11px] font-bold px-2.5 py-1 rounded-full border border-brand-500/40 shadow-xl">
+                Juan (En movimiento)
+              </div>
+            </div>
+
+            <!-- PIN 3: PENDIENTE (AMBER) -->
+            <div class="absolute top-[60%] left-[70%] group cursor-pointer">
+              <div class="w-8 h-8 rounded-full bg-amberGold-500 text-gray-900 flex items-center justify-center shadow-glow-amber border-2 border-gray-900 font-numeric font-extrabold text-xs transition-transform group-hover:scale-125">
+                #3
+              </div>
+              <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-[11px] px-2 py-1 rounded-md whitespace-nowrap border border-white/10 z-30 shadow-xl">
+                María Gómez - $120.00 (Próxima Visita)
+              </div>
+            </div>
+
+            <!-- PIN 4: MORA (ROJO) -->
+            <div class="absolute top-[40%] left-[82%] group cursor-pointer">
+              <div class="w-8 h-8 rounded-full bg-crimson-500 text-white flex items-center justify-center shadow-glow-crimson border-2 border-gray-900 font-numeric font-bold text-xs animate-bounce">
+                !
+              </div>
+              <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-[11px] px-2 py-1 rounded-md whitespace-nowrap border border-white/10 z-30 shadow-xl">
+                Roberto Santos - Mora 3 días
+              </div>
+            </div>
+          </div>
+
+          <!-- FLOATING NEXT CLIENT CARD AT BOTTOM OF MAP -->
+          <div class="p-4 bg-[#0F172A]/90 border-t border-white/10 backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+              <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=120&q=80" class="w-11 h-11 rounded-full object-cover border border-amberGold-500" alt="Maria"/>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold text-amberGold-500 uppercase tracking-wider">👉 Siguiente Cliente</span>
+                  <span class="text-[10px] bg-amberGold-500/10 text-amberGold-500 px-2 py-0.5 rounded-full font-numeric font-semibold">A 150 metros</span>
+                </div>
+                <h4 class="font-bold text-sm text-white">María Gómez <span class="text-gray-400 font-normal text-xs">(Tienda La Bendición)</span></h4>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-2 sm:pt-0 border-white/5">
+              <div class="text-right">
+                <span class="text-[11px] text-gray-400 block">Cuota a Cobrar</span>
+                <span class="font-numeric font-bold text-emerald-400 text-sm">$120.00</span>
+              </div>
+              <button class="px-4 py-2 rounded-xl bg-amberGold-500 hover:bg-amber-600 text-gray-950 font-bold text-xs flex items-center gap-1 shadow-glow-amber transition-all active:scale-95">
+                <span class="material-symbols-outlined text-[16px]">navigation</span>
+                <span>Navegar GPS</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: LIVE TRANSACTIONS FEED (5 COLS) -->
+        <div class="lg:col-span-5 glass-card rounded-3xl p-5 flex flex-col border border-white/10">
+          <div class="flex items-center justify-between pb-4 border-b border-white/10">
+            <div>
+              <h3 class="font-bold text-sm text-white">Feed de Pagos en Vivo</h3>
+              <p class="text-xs text-gray-400">Abonos registrados en la ruta en tiempo real</p>
+            </div>
+            <button class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition-colors">
+              <span class="material-symbols-outlined text-[18px]">tune</span>
+            </button>
+          </div>
+
+          <!-- FEED TRANSACTIONS LIST -->
+          <div class="flex-1 overflow-y-auto py-3 space-y-3 pr-1">
+            
+            <!-- Item 1: Abono Exitoso -->
+            <div class="p-3 rounded-2xl bg-gray-900/60 border border-emerald-500/20 flex items-center justify-between hover:border-emerald-500/40 transition-all group">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-[20px]">check_circle</span>
+                </div>
+                <div>
+                  <h4 class="font-bold text-xs text-white">Carlos Ruiz</h4>
+                  <span class="text-[11px] text-gray-400 font-numeric">Cuota Completa • 10:42 AM</span>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="font-numeric font-extrabold text-sm text-emerald-400 block">+$45.00</span>
+                <button class="text-[10px] text-brand-500 hover:underline flex items-center justify-end gap-0.5 font-bold mt-0.5">
+                  <span class="material-symbols-outlined text-[12px]">send</span> WhatsApp
+                </button>
+              </div>
+            </div>
+
+            <!-- Item 2: Abono Parcial -->
+            <div class="p-3 rounded-2xl bg-gray-900/60 border border-amberGold-500/20 flex items-center justify-between hover:border-amberGold-500/40 transition-all group">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-amberGold-500/10 text-amberGold-500 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-[20px]">timelapse</span>
+                </div>
+                <div>
+                  <h4 class="font-bold text-xs text-white">Ana López</h4>
+                  <span class="text-[11px] text-gray-400 font-numeric">Abono Parcial • 09:15 AM</span>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="font-numeric font-extrabold text-sm text-amberGold-500 block">+$20.00</span>
+                <span class="text-[10px] text-gray-400">Saldo pendiente $10</span>
+              </div>
+            </div>
+
+            <!-- Item 3: No Pago / Ausente -->
+            <div class="p-3 rounded-2xl bg-gray-900/60 border border-crimson-500/20 flex items-center justify-between hover:border-crimson-500/40 transition-all group">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-crimson-500/10 text-crimson-500 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-[20px]">event_busy</span>
+                </div>
+                <div>
+                  <h4 class="font-bold text-xs text-white">Miguel Santos</h4>
+                  <span class="text-[11px] text-crimson-400 font-numeric">Cliente Ausente • 08:30 AM</span>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="font-numeric font-bold text-xs text-gray-500 line-through block">$60.00</span>
+                <button class="text-[10px] text-crimson-400 hover:underline font-bold">Reprogramar</button>
+              </div>
+            </div>
+
+            <!-- Item 4: Abono Exitoso -->
+            <div class="p-3 rounded-2xl bg-gray-900/60 border border-emerald-500/20 flex items-center justify-between hover:border-emerald-500/40 transition-all group">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-[20px]">check_circle</span>
+                </div>
+                <div>
+                  <h4 class="font-bold text-xs text-white">Lucía Fernández</h4>
+                  <span class="text-[11px] text-gray-400 font-numeric">Cuota Completa • 08:05 AM</span>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="font-numeric font-extrabold text-sm text-emerald-400 block">+$150.00</span>
+                <button class="text-[10px] text-brand-500 hover:underline flex items-center justify-end gap-0.5 font-bold mt-0.5">
+                  <span class="material-symbols-outlined text-[12px]">send</span> WhatsApp
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- FOOTER SUMMARY -->
+          <div class="pt-3 border-t border-white/10 text-center">
+            <a href="#" class="text-xs text-gray-400 hover:text-brand-500 font-semibold inline-flex items-center gap-1 transition-colors">
+              <span>Ver Historial Completo de Cobros</span>
+              <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- CONTAINER VISTA MÓVIL: APP COBRADOR DE CAMPO -->
+  <div id="view-mobile" class="hidden flex-1 flex justify-center items-center p-4 bg-[#060911]">
+    
+    <!-- MOCKUP MÓVIL SMARTPHONE FRAME -->
+    <div class="w-full max-w-sm h-[750px] bg-[#0F172A] rounded-[40px] border-4 border-gray-800 shadow-2xl overflow-hidden flex flex-col relative">
+      
+      <!-- NOTIFICATION SYNC BANNER (OFFLINE SYNC) -->
+      <div class="bg-amberGold-500/90 text-gray-950 px-3 py-1.5 flex items-center justify-center gap-2 text-xs font-bold shadow-md">
+        <span class="material-symbols-outlined text-[16px] animate-spin">sync</span>
+        <span>Sincronización Offline: 3 abonos guardados</span>
+      </div>
+
+      <!-- APP HEADER COBRADOR -->
+      <div class="p-4 bg-gray-900/90 backdrop-blur-md border-b border-white/10 space-y-3">
+        <div class="flex justify-between items-center">
+          <div>
+            <span class="text-[10px] text-brand-500 font-bold uppercase tracking-widest block">Ruta Activa</span>
+            <h2 class="text-base font-extrabold text-white">San Antonio - Cobrador Juan</h2>
+          </div>
+          <!-- Circular Progress Ring (64%) -->
+          <div class="relative w-12 h-12 flex items-center justify-center">
+            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+              <path class="text-gray-800" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="4"></path>
+              <path class="text-amberGold-500 filter drop-shadow-glow" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="64, 100" stroke-linecap="round" stroke-width="4"></path>
+            </svg>
+            <span class="absolute font-numeric font-bold text-[11px] text-amberGold-500">64%</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 bg-gray-950/60 p-2.5 rounded-xl border border-white/5 font-numeric">
+          <div>
+            <span class="text-[10px] text-gray-400 block">Meta del Día</span>
+            <span class="text-sm font-bold text-white">$500.00</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-gray-400 block">Cobrado</span>
+            <span class="text-sm font-extrabold text-emerald-400">$320.00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CLIENT LIST CONTENT -->
+      <div class="flex-1 overflow-y-auto p-3 space-y-3 pb-20">
+        
+        <!-- CARD 1: PENDIENTE -->
+        <div class="p-3.5 rounded-2xl bg-gray-900/80 border border-white/10 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="w-6 h-6 rounded-full bg-brand-500/20 text-brand-400 text-xs font-bold flex items-center justify-center font-numeric">#1</span>
+              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" class="w-9 h-9 rounded-full object-cover border border-white/20" alt="Carlos"/>
+              <div>
+                <h4 class="font-bold text-xs text-white">Carlos Ruiz</h4>
+                <span class="text-[10px] text-gray-400 flex items-center gap-0.5">
+                  <span class="material-symbols-outlined text-[12px] text-brand-500">location_on</span> a 150 metros
+                </span>
+              </div>
+            </div>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amberGold-500/10 text-amberGold-500 border border-amberGold-500/30">PENDIENTE</span>
+          </div>
+
+          <div class="flex items-center justify-between pt-2 border-t border-white/5">
+            <div>
+              <span class="text-[10px] text-gray-400 block">Cuota Diaria</span>
+              <span class="font-numeric font-extrabold text-white text-base">$15.00</span>
+            </div>
+            <button onclick="alert('Abriendo ventana de cobro rápido...')" class="px-3.5 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs flex items-center gap-1 shadow-glow-emerald active:scale-95 transition-all">
+              <span class="material-symbols-outlined text-[16px]">payments</span>
+              <span>Cobrar $15</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- CARD 2: PAGADO -->
+        <div class="p-3.5 rounded-2xl bg-gray-900/30 border border-white/5 opacity-60 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="w-6 h-6 rounded-full bg-gray-800 text-gray-500 text-xs font-bold flex items-center justify-center font-numeric">#2</span>
+              <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80" class="w-9 h-9 rounded-full object-cover grayscale" alt="Maria"/>
+              <div>
+                <h4 class="font-bold text-xs text-gray-300 line-through">María López</h4>
+                <span class="text-[10px] text-emerald-400 font-numeric">Pagado hoy a las 08:30 AM</span>
+              </div>
+            </div>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">PAGADO</span>
+          </div>
+        </div>
+
+        <!-- CARD 3: PENDIENTE -->
+        <div class="p-3.5 rounded-2xl bg-gray-900/80 border border-white/10 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="w-6 h-6 rounded-full bg-brand-500/20 text-brand-400 text-xs font-bold flex items-center justify-center font-numeric">#3</span>
+              <div class="w-9 h-9 rounded-full bg-gray-800 text-gray-300 flex items-center justify-center">
+                <span class="material-symbols-outlined text-[18px]">person</span>
+              </div>
+              <div>
+                <h4 class="font-bold text-xs text-white">Roberto Gómez</h4>
+                <span class="text-[10px] text-gray-400 flex items-center gap-0.5">
+                  <span class="material-symbols-outlined text-[12px] text-brand-500">location_on</span> a 450 metros
+                </span>
+              </div>
+            </div>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amberGold-500/10 text-amberGold-500 border border-amberGold-500/30">PENDIENTE</span>
+          </div>
+
+          <div class="flex items-center justify-between pt-2 border-t border-white/5">
+            <div>
+              <span class="text-[10px] text-gray-400 block">Cuota Diaria</span>
+              <span class="font-numeric font-extrabold text-white text-base">$10.00</span>
+            </div>
+            <button class="px-3.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-bold text-xs flex items-center gap-1 border border-white/10">
+              <span class="material-symbols-outlined text-[16px]">payments</span>
+              <span>Abonar</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- BOTTOM MOBILE NAVIGATION BAR -->
+      <div class="absolute bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-xl border-t border-white/10 p-2 flex justify-around items-center">
+        <button class="flex flex-col items-center gap-0.5 text-brand-500 font-bold text-[10px]">
+          <span class="material-symbols-outlined text-[20px]">alt_route</span>
+          <span>Ruta</span>
+        </button>
+        <button class="flex flex-col items-center gap-0.5 text-gray-400 hover:text-white font-medium text-[10px]">
+          <span class="material-symbols-outlined text-[20px]">person_search</span>
+          <span>Clientes</span>
+        </button>
+        <button class="flex flex-col items-center gap-0.5 text-gray-400 hover:text-white font-medium text-[10px]">
+          <span class="material-symbols-outlined text-[20px]">point_of_sale</span>
+          <span>Abonos</span>
+        </button>
+        <button class="flex flex-col items-center gap-0.5 text-gray-400 hover:text-white font-medium text-[10px]">
+          <span class="material-symbols-outlined text-[20px]">more_horiz</span>
+          <span>Más</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT FOR VIEW SWITCHING -->
+  <script>
+    function switchView(view) {
+      const desktopView = document.getElementById('view-desktop');
+      const mobileView = document.getElementById('view-mobile');
+      const btnDesktop = document.getElementById('btn-desktop-view');
+      const btnMobile = document.getElementById('btn-mobile-view');
+
+      if (view === 'desktop') {
+        desktopView.classList.remove('hidden');
+        mobileView.classList.add('hidden');
+        
+        btnDesktop.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-brand-500 text-white shadow-glow-emerald";
+        btnMobile.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-gray-400 hover:text-white";
+      } else {
+        desktopView.classList.add('hidden');
+        mobileView.classList.remove('hidden');
+
+        btnMobile.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-brand-500 text-white shadow-glow-emerald";
+        btnDesktop.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-gray-400 hover:text-white";
+      }
+    }
+  </script>
+
+</body>
+</html>

@@ -1411,8 +1411,11 @@ function App() {
       {/* Desktop Sidebar Navigation */}
       <aside className="sidebar">
         <div className="logo-container">
-          <div className="logo-icon">Z</div>
-          <div className="logo-text">Credits</div>
+          <div className="logo-icon shadow-glow-emerald">Z</div>
+          <div className="logo-text">
+            <span>ZENU</span>
+            <span style={{ fontSize: '0.65rem', display: 'block', color: 'var(--color-primary)', fontWeight: 600, letterSpacing: '1px', marginTop: '-4px' }}>FINTECH PRO</span>
+          </div>
         </div>
 
         <ul className="nav-menu">
@@ -1522,28 +1525,36 @@ function App() {
       {/* Main Content */}
       <main className="main-content">
         {offlinePayments.length > 0 && (
-          <div className="offline-banner" style={{ borderRadius: 'var(--radius-md)', marginBottom: '20px' }}>
-            <span>⚠️ Hay {offlinePayments.length} abonos guardados sin conexión.</span>
-            <button type="button" onClick={syncOfflinePayments} disabled={isSyncing}>
+          <div className="offline-sync-bar" style={{ borderRadius: 'var(--radius-md)', marginBottom: '20px' }}>
+            <span className="material-symbols-outlined spin">sync</span>
+            <span>Sincronización Offline: {offlinePayments.length} abonos guardados localmente.</span>
+            <button type="button" onClick={syncOfflinePayments} disabled={isSyncing} className="btn btn-sm btn-primary" style={{ marginLeft: 'auto', background: '#0b0f19', color: '#10b981', border: 'none' }}>
               {isSyncing ? 'Sincronizando...' : '🔄 Sincronizar Ahora'}
             </button>
           </div>
         )}
         <header className="header">
           <div className="welcome-section">
-            <h1>Sistema de gestión de microcréditos</h1>
-            <p>Control financiero de microcréditos en tiempo real</p>
+            <h1>Control de Operaciones Zenu</h1>
+            <p>Monitoreo financiero en tiempo real • Recaudación y Rutas</p>
           </div>
 
           <div className="header-actions">
-            <button className="btn btn-secondary btn-sm" onClick={loadAppData} disabled={loadingHealth}>
+            {stats.totalRecaudadoHoy > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '30px', color: '#10b981', fontWeight: 700, fontSize: '0.85rem' }}>
+                <DollarSign size={16} />
+                <span>Recaudado Hoy: ${stats.totalRecaudadoHoy.toLocaleString()}</span>
+              </div>
+            )}
+
+            <button className="btn btn-secondary btn-sm" onClick={loadAppData} disabled={loadingHealth} title="Recargar datos">
               <RefreshCw className={`nav-icon ${loadingHealth ? 'spin' : ''}`} />
             </button>
 
-            <div className="db-status-badge">
+            <div className="db-status-badge shadow-glow-emerald">
               <span className={`status-dot ${apiOnline ? 'online' : 'offline'}`}></span>
               <span>
-                API: {apiOnline === null ? 'Verificando...' : apiOnline ? `Conectado (${dbTime ? new Date(dbTime).toLocaleTimeString() : 'Postgres'})` : 'Offline (Modo Local)'}
+                API: {apiOnline === null ? 'Verificando...' : apiOnline ? `Online (${dbTime ? new Date(dbTime).toLocaleTimeString() : 'Postgres'})` : 'Offline'}
               </span>
             </div>
           </div>
