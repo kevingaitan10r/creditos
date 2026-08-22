@@ -105,6 +105,7 @@ function App() {
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [receiptData, setReceiptData] = useState<any>(null);
   const [theme, setTheme] = useState<'dark' | 'light'>((localStorage.getItem('zenu_theme') as 'dark' | 'light') || 'dark');
+  const [showQuickActionsMenu, setShowQuickActionsMenu] = useState(false);
   
   // Offline synchronization states
   const [offlinePayments, setOfflinePayments] = useState<any[]>(() => {
@@ -1455,10 +1456,30 @@ function App() {
       {/* Mobile Top Header */}
       <div className="mobile-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div className="logo-icon" style={{ width: '32px', height: '32px', fontSize: '1rem', borderRadius: '6px' }}>Z</div>
-          <span style={{ fontWeight: 700, fontSize: '1.1rem', letterSpacing: '-0.3px' }}>Credits</span>
+          <div className="logo-icon shadow-glow-emerald" style={{ width: '32px', height: '32px', fontSize: '1rem', borderRadius: '6px' }}>Z</div>
+          <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.3px', color: 'white' }}>ZENU</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {user?.rol === 'ADMIN' && creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length > 0 && (
+            <button
+              onClick={() => setActiveTab('aprobaciones')}
+              style={{
+                background: '#f59e0b',
+                color: '#0b0f19',
+                border: 'none',
+                padding: '4px 10px',
+                borderRadius: '20px',
+                fontWeight: 800,
+                fontSize: '0.75rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                boxShadow: '0 0 12px rgba(245, 158, 11, 0.4)'
+              }}
+            >
+              🔔 Aprobaciones ({creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length})
+            </button>
+          )}
           <span className="badge badge-neutral" style={{ padding: '4px 8px', fontSize: '0.7rem' }}>
             {user?.rol === 'ADMIN' ? 'Admin' : 'Cobrador'}
           </span>
@@ -1631,6 +1652,84 @@ function App() {
                 <span>Recaudado Hoy: ${stats.totalRecaudadoHoy.toLocaleString()}</span>
               </div>
             )}
+
+            {/* Categoría Consolidada: Operaciones Rápidas */}
+            <div style={{ position: 'relative' }}>
+              <button 
+                type="button"
+                className="btn btn-primary"
+                onClick={() => setShowQuickActionsMenu(!showQuickActionsMenu)}
+                style={{ 
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  borderColor: '#10b981',
+                  color: 'white',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  boxShadow: '0 0 15px rgba(16, 185, 129, 0.35)',
+                  padding: '8px 16px',
+                  borderRadius: '12px'
+                }}
+              >
+                <span>⚡ Nueva Operación</span>
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+                  {showQuickActionsMenu ? 'expand_less' : 'expand_more'}
+                </span>
+              </button>
+
+              {showQuickActionsMenu && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  right: 0,
+                  marginTop: '8px',
+                  width: '230px',
+                  background: 'rgba(15, 23, 42, 0.95)',
+                  backdropFilter: 'blur(16px)',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  borderRadius: '16px',
+                  padding: '8px',
+                  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.8)',
+                  zIndex: 100,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px'
+                }}>
+                  <button
+                    onClick={() => { setActiveTab('creditos'); setShowQuickActionsMenu(false); }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 12px', background: 'transparent', border: 'none', color: 'white', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
+                  >
+                    <CreditCard size={16} style={{ color: '#10b981' }} />
+                    <span>Solicitar / Crear Crédito</span>
+                  </button>
+                  <button
+                    onClick={() => { setActiveTab('clientes'); setShowQuickActionsMenu(false); }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 12px', background: 'transparent', border: 'none', color: 'white', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
+                  >
+                    <Users size={16} style={{ color: '#38bdf8' }} />
+                    <span>Registrar Cliente</span>
+                  </button>
+                  <button
+                    onClick={() => { setActiveTab('gastos'); setShowQuickActionsMenu(false); }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 12px', background: 'transparent', border: 'none', color: 'white', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
+                  >
+                    <TrendingUp size={16} style={{ color: '#ef4444', transform: 'rotate(180deg)' }} />
+                    <span>Registrar Gasto Ruta</span>
+                  </button>
+                  {user?.rol === 'ADMIN' && (
+                    <button
+                      onClick={() => { setActiveTab('rutas'); setShowQuickActionsMenu(false); }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 12px', background: 'transparent', border: 'none', color: 'white', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
+                    >
+                      <MapPin size={16} style={{ color: '#f59e0b' }} />
+                      <span>Gestionar Rutas</span>
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
 
             <button className="btn btn-secondary btn-sm" onClick={loadAppData} disabled={loadingHealth} title="Recargar datos">
               <RefreshCw className={`nav-icon ${loadingHealth ? 'spin' : ''}`} />
@@ -3570,6 +3669,25 @@ function App() {
           <LayoutDashboard size={20} />
           <span>Inicio</span>
         </button>
+        {user?.rol === 'ADMIN' && (
+          <button
+            className={`bottom-nav-item ${activeTab === 'aprobaciones' ? 'active' : ''}`}
+            onClick={() => setActiveTab('aprobaciones')}
+            style={{ position: 'relative' }}
+          >
+            <CheckCircle2 size={20} style={{ color: creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length > 0 ? '#f59e0b' : 'inherit' }} />
+            <span>Aprobación</span>
+            {creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length > 0 && (
+              <span style={{
+                position: 'absolute', top: '2px', right: '8px',
+                background: '#f59e0b', color: '#0b0f19', fontWeight: 800,
+                fontSize: '0.65rem', padding: '1px 6px', borderRadius: '10px'
+              }}>
+                {creditos.filter(c => c.estado === 'PENDIENTE_APROBACION').length}
+              </span>
+            )}
+          </button>
+        )}
         <button
           className={`bottom-nav-item ${activeTab === 'clientes' ? 'active' : ''}`}
           onClick={() => setActiveTab('clientes')}
