@@ -545,7 +545,7 @@ body::after {
 
 @media (min-width: 1025px) {
   .section-container:has(.table-wrapper) {
-    grid-template-columns: 300px minmax(0, 1fr) !important;
+    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr) !important;
   }
 }
 
