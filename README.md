@@ -1,4 +1,4 @@
-# 🪙 Zenu - Sistema de Gestión de Microcréditos
+Sistema de Gestión de Microcréditos
 
 Este repositorio contiene el código fuente completo para el **Sistema de Gestión de Microcréditos Zenu**. El proyecto está estructurado como una aplicación multi-módulo que consta de:
 
