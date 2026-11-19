@@ -1,0 +1,32 @@
+name: Mantener activa Base de Datos Supabase
+
+on:
+  schedule:
+    # Se ejecuta todos los días a las 12:00 UTC (07:00 AM hora Colombia)
+    - cron: '0 12 * * *'
+  workflow_dispatch: # Permite ejecutarlo manualmente desde la pestaña Actions en GitHub
+
+jobs:
+  ping-keep-alive:
+    name: Ping Health Check & Keep-Alive
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping al endpoint de salud del Backend y Supabase
+        run: |
+          URL="https://creditos-gilt.vercel.app/api/health"
+          echo "Realizando ping a: $URL"
+          
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}\nTIME_TOTAL:%{time_total}s" -X GET "$URL")
+          echo "Respuesta del servidor:"
+          echo "$RESPONSE"
+          
+          STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d':' -f2)
+          
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
+            echo "✅ Ping exitoso (HTTP $STATUS). Supabase y Backend se mantienen activos."
+          else
+            echo "⚠️ El servidor respondió con código HTTP $STATUS. Reintentando ping a la raíz..."
+            curl -s -I -X GET "https://creditos-gilt.vercel.app/"
+            echo "Ping alternativo completado."
+          fi
