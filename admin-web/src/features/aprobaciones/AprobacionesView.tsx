@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { AiRiskCard, type AiEvaluation } from '../../components/AiRiskCard';
+import { Sparkles } from 'lucide-react';
 
 interface AprobacionesViewProps {
   creditos: any[];
   onApproveCredit: (id: number) => void;
   onRejectCredit: (id: number) => void;
+  onEvaluateCredit?: (credit: any) => Promise<AiEvaluation | null>;
 }
 
 export const isPendingApproval = (st?: string) => {
@@ -15,9 +18,42 @@ export const isPendingApproval = (st?: string) => {
 export const AprobacionesView: React.FC<AprobacionesViewProps> = ({
   creditos,
   onApproveCredit,
-  onRejectCredit
+  onRejectCredit,
+  onEvaluateCredit
 }) => {
   const pendientes = creditos.filter(c => isPendingApproval(c.estado));
+  const [evaluacionesLocales, setEvaluacionesLocales] = useState<Record<number, AiEvaluation>>({});
+  const [cargandoId, setCargandoId] = useState<number | null>(null);
+
+  const handleLiveEvaluate = async (credit: any) => {
+    if (!onEvaluateCredit) return;
+    setCargandoId(credit.id);
+    try {
+      const res = await onEvaluateCredit(credit);
+      if (res) {
+        setEvaluacionesLocales(prev => ({ ...prev, [credit.id]: res }));
+      }
+    } finally {
+      setCargandoId(null);
+    }
+  };
+
+  const getEvaluationForCredit = (c: any): AiEvaluation | null => {
+    if (evaluacionesLocales[c.id]) return evaluacionesLocales[c.id];
+    if (c.analisisIa) {
+      return typeof c.analisisIa === 'string' ? JSON.parse(c.analisisIa) : c.analisisIa;
+    }
+    if (c.scoreIa !== undefined && c.scoreIa !== null) {
+      return {
+        score: c.scoreIa,
+        nivelRiesgo: c.nivelRiesgo || 'MEDIO',
+        decisionSugerida: c.scoreIa >= 75 ? 'APROBAR' : (c.scoreIa >= 50 ? 'CONDICIONAR' : 'RECHAZAR'),
+        montoMaximoSugerido: c.monto,
+        resumen: 'Análisis de riesgo histórico recuperado.'
+      };
+    }
+    return null;
+  };
 
   return (
     <div className="section-container" style={{ flexDirection: 'column', gap: '20px' }}>
@@ -86,6 +122,43 @@ export const AprobacionesView: React.FC<AprobacionesViewProps> = ({
                       <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>{c.fecha}</span>
                     </div>
                   </div>
+
+                  {/* Evaluación de Riesgo con IA */}
+                  {(() => {
+                    const evaluacion = getEvaluationForCredit(c);
+                    if (evaluacion) {
+                      return <AiRiskCard evaluation={evaluacion} onRefresh={() => handleLiveEvaluate(c)} loading={cargandoId === c.id} />;
+                    }
+                    if (onEvaluateCredit) {
+                      return (
+                        <div style={{ marginTop: '12px' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleLiveEvaluate(c)}
+                            disabled={cargandoId === c.id}
+                            className="btn btn-secondary"
+                            style={{
+                              width: '100%',
+                              padding: '10px',
+                              background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))',
+                              border: '1px solid rgba(168, 85, 247, 0.4)',
+                              color: '#e0e7ff',
+                              fontWeight: 700,
+                              fontSize: '0.85rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '8px'
+                            }}
+                          >
+                            <Sparkles size={16} color="#a855f7" />
+                            {cargandoId === c.id ? 'Analizando con Gemini...' : '⚡ Evaluar Riesgo con IA'}
+                          </button>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
 
                 <div style={{ display: 'flex', gap: '10px', paddingTop: '12px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>

@@ -16,12 +16,14 @@ import {
   Share2,
   Settings,
   X,
-  FileDown
+  FileDown,
+  Sparkles
 } from 'lucide-react';
 import { PosReceiptModal } from './components/modals/PosReceiptModal';
 import { AprobacionesView, isPendingApproval } from './features/aprobaciones/AprobacionesView';
 import { GastosView } from './features/gastos/GastosView';
 import { RutasView } from './features/rutas/RutasView';
+import { AiRiskCard, type AiEvaluation } from './components/AiRiskCard';
 import './App.css';
 
 // Configuración de la URL de la API. 
@@ -95,6 +97,8 @@ function App() {
   // Forms states
   const [newClient, setNewClient] = useState({ documento: '', nombre: '', telefono: '', direccion: '', rutaId: '' });
   const [newCredit, setNewCredit] = useState({ clienteId: '', monto: 500000, tasa: 20, frecuencia: 'DIARIO', cuotas: 30 });
+  const [evaluacionIa, setEvaluacionIa] = useState<AiEvaluation | null>(null);
+  const [loadingIa, setLoadingIa] = useState<boolean>(false);
   const [routeAssignment, setRouteAssignment] = useState({ rutaId: '', cobradorId: '' });
   const [newGasto, setNewGasto] = useState({ descripcion: '', monto: '' });
   const [newPayment, setNewPayment] = useState({ creditoId: '', monto: '', tipo: 'EFECTIVO', lat: '', lng: '' });
@@ -949,6 +953,60 @@ function App() {
     }
   };
 
+  const handleEvaluarRiesgoIa = async () => {
+    if (!newCredit.clienteId || !newCredit.monto) {
+      alert('Por favor selecciona un cliente y un monto para evaluar con IA.');
+      return;
+    }
+    setLoadingIa(true);
+    try {
+      const res = await fetchWithAuth(`${API_URL}/creditos/evaluar-riesgo`, {
+        method: 'POST',
+        body: JSON.stringify({
+          clienteId: Number(newCredit.clienteId),
+          monto: Number(newCredit.monto),
+          tasa: Number(newCredit.tasa),
+          cuotas: Number(newCredit.cuotas),
+          frecuencia: newCredit.frecuencia
+        })
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setEvaluacionIa(json.data);
+      } else {
+        const err = await res.json();
+        alert(err.message || 'Error al evaluar riesgo crediticio.');
+      }
+    } catch (error) {
+      console.error('Error al evaluar riesgo:', error);
+      alert('Error de conexión al conectar con el módulo de IA.');
+    } finally {
+      setLoadingIa(false);
+    }
+  };
+
+  const handleEvaluatePendingCredit = async (credit: any): Promise<AiEvaluation | null> => {
+    try {
+      const res = await fetchWithAuth(`${API_URL}/creditos/evaluar-riesgo`, {
+        method: 'POST',
+        body: JSON.stringify({
+          clienteId: credit.clienteId || credit.id_cliente,
+          monto: credit.monto,
+          tasa: credit.interes,
+          cuotas: credit.cuotas || 30,
+          frecuencia: credit.frecuencia || 'DIARIO'
+        })
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return json.data;
+      }
+    } catch (e) {
+      console.error('Error evaluando crédito pendiente:', e);
+    }
+    return null;
+  };
+
   const handleAddCredit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCredit.clienteId || !newCredit.monto || !newCredit.tasa || !newCredit.cuotas) {
@@ -967,11 +1025,15 @@ function App() {
           monto: Number(newCredit.monto),
           tasa: Number(newCredit.tasa),
           frecuencia: newCredit.frecuencia,
-          cuotas: Number(newCredit.cuotas)
+          cuotas: Number(newCredit.cuotas),
+          scoreIa: evaluacionIa?.score,
+          nivelRiesgo: evaluacionIa?.nivelRiesgo,
+          analisisIa: evaluacionIa
         })
       });
       const data = await res.json();
       if (res.ok) {
+        setEvaluacionIa(null);
         loadAppData();
         if (data.requiereAprobacion) {
           if (user?.rol === 'ADMIN') {
@@ -2758,6 +2820,40 @@ function App() {
                         </span>
                       </div>
                     </div>
+
+                    {/* Botón y Tarjeta de Evaluación con IA (Gemini) */}
+                    <button
+                      type="button"
+                      onClick={handleEvaluarRiesgoIa}
+                      disabled={loadingIa || !newCredit.clienteId || !newCredit.monto}
+                      className="btn btn-secondary"
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        marginTop: '12px',
+                        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.18), rgba(168, 85, 247, 0.18))',
+                        border: '1px solid rgba(168, 85, 247, 0.45)',
+                        color: '#e0e7ff',
+                        fontWeight: 700,
+                        fontSize: '0.86rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        borderRadius: 'var(--radius-sm)'
+                      }}
+                    >
+                      <Sparkles size={16} color="#c084fc" />
+                      {loadingIa ? 'Analizando con Gemini...' : '⚡ Evaluar Riesgo con IA (Gemini)'}
+                    </button>
+
+                    {evaluacionIa && (
+                      <AiRiskCard
+                        evaluation={evaluacionIa}
+                        onRefresh={handleEvaluarRiesgoIa}
+                        loading={loadingIa}
+                      />
+                    )}
                   </>
                 ) : (
                   <>
@@ -2874,6 +2970,24 @@ function App() {
                           }`}>
                             {c.estado === 'PENDIENTE_APROBACION' ? 'PENDIENTE APROBACIÓN' : c.estado}
                           </span>
+                          {c.scoreIa !== undefined && c.scoreIa !== null && (
+                            <div style={{ marginTop: '4px' }}>
+                              <span style={{
+                                fontSize: '0.68rem',
+                                fontWeight: 800,
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                background: c.scoreIa >= 75 ? 'rgba(16, 185, 129, 0.15)' : (c.scoreIa >= 50 ? 'rgba(245, 158, 11, 0.15)' : 'rgba(239, 68, 68, 0.15)'),
+                                color: c.scoreIa >= 75 ? '#10b981' : (c.scoreIa >= 50 ? '#f59e0b' : '#ef4444'),
+                                border: `1px solid ${c.scoreIa >= 75 ? '#10b98144' : (c.scoreIa >= 50 ? '#f59e0b44' : '#ef444444')}`,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '3px'
+                              }}>
+                                ✨ Score {c.scoreIa}
+                              </span>
+                            </div>
+                          )}
                         </td>
                         <td data-label="Acciones">
                           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -2967,6 +3081,7 @@ function App() {
             creditos={creditos}
             onApproveCredit={handleApproveCredit}
             onRejectCredit={handleRejectCredit}
+            onEvaluateCredit={handleEvaluatePendingCredit}
           />
         )}
 

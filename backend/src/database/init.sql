@@ -53,6 +53,9 @@ CREATE TABLE creditos (
     frecuencia_pago VARCHAR(20) DEFAULT 'DIARIO',
     fecha_desembolso DATE NOT NULL,
     estado VARCHAR(20) DEFAULT 'ACTIVO', -- 'ACTIVO', 'PAGADO', 'MORA'
+    score_ia INT DEFAULT NULL,
+    nivel_riesgo VARCHAR(20) DEFAULT NULL,
+    analisis_ia JSONB DEFAULT NULL,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

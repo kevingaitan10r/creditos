@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import pool, { actualizarEstadosCreditos } from '../config/db';
 import { authenticateToken, AuthRequest, requireRole } from '../middleware/auth';
+import { evaluarRiesgoCrediticio } from '../services/aiScoringService';
 
 const router = Router();
 
@@ -21,7 +22,10 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response) => {
         (cr.total_a_pagar - cr.saldo_pendiente) as pagado,
         cr.frecuencia_pago as frecuencia,
         cr.fecha_desembolso::text as fecha,
-        cr.estado
+        cr.estado,
+        cr.score_ia as "scoreIa",
+        cr.nivel_riesgo as "nivelRiesgo",
+        cr.analisis_ia as "analisisIa"
       FROM creditos cr
       JOIN clientes cl ON cr.id_cliente = cl.id_cliente
       ORDER BY cr.id_credito DESC;
@@ -47,6 +51,38 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response) => {
     res.status(500).json({
       status: 'error',
       message: 'Error al obtener los créditos.',
+      error: error.message
+    });
+  }
+});
+
+// POST /api/creditos/evaluar-riesgo
+router.post('/evaluar-riesgo', authenticateToken, async (req: AuthRequest, res: Response) => {
+  try {
+    const { clienteId, monto, tasa, cuotas, frecuencia } = req.body;
+    if (!clienteId || !monto) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'clienteId y monto son requeridos para evaluar el riesgo con IA.'
+      });
+    }
+
+    const resultado = await evaluarRiesgoCrediticio({
+      clienteId: parseInt(clienteId, 10),
+      monto: parseFloat(monto),
+      tasa: parseFloat(tasa || 20),
+      cuotas: parseInt(cuotas || 30, 10),
+      frecuencia: frecuencia || 'DIARIO'
+    });
+
+    res.status(200).json({
+      status: 'success',
+      data: resultado
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Error al evaluar el riesgo del crédito con IA.',
       error: error.message
     });
   }
@@ -111,25 +147,71 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response) => {
       estadoInicial = 'PENDIENTE_APROBACION';
     }
 
-    const queryStr = `
-      INSERT INTO creditos 
-        (id_cliente, monto_prestado, tasa_interes, total_a_pagar, saldo_pendiente, valor_cuota, frecuencia_pago, fecha_desembolso, estado) 
-      VALUES 
-        ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
-      RETURNING *;
-    `;
+    let scoreIa = req.body.scoreIa ? parseInt(req.body.scoreIa, 10) : null;
+    let nivelRiesgo = req.body.nivelRiesgo || null;
+    let analisisIa = req.body.analisisIa ? JSON.stringify(req.body.analisisIa) : null;
 
-    const result = await pool.query(queryStr, [
-      clienteId,
-      montoNum,
-      tasaNum,
-      totalAPagar,
-      saldoPendiente,
-      valorCuota,
-      frecuencia,
-      fechaDesembolso,
-      estadoInicial
-    ]);
+    if (scoreIa === null) {
+      try {
+        const evaluacion = await evaluarRiesgoCrediticio({
+          clienteId,
+          monto: montoNum,
+          tasa: tasaNum,
+          cuotas: cuotasNum,
+          frecuencia
+        });
+        scoreIa = evaluacion.score;
+        nivelRiesgo = evaluacion.nivelRiesgo;
+        analisisIa = JSON.stringify(evaluacion);
+      } catch (e) {
+        console.warn('Evaluación de riesgo automática no completada:', e);
+      }
+    }
+
+    let result;
+    try {
+      const queryWithIa = `
+        INSERT INTO creditos 
+          (id_cliente, monto_prestado, tasa_interes, total_a_pagar, saldo_pendiente, valor_cuota, frecuencia_pago, fecha_desembolso, estado, score_ia, nivel_riesgo, analisis_ia) 
+        VALUES 
+          ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
+        RETURNING *;
+      `;
+      result = await pool.query(queryWithIa, [
+        clienteId,
+        montoNum,
+        tasaNum,
+        totalAPagar,
+        saldoPendiente,
+        valorCuota,
+        frecuencia,
+        fechaDesembolso,
+        estadoInicial,
+        scoreIa,
+        nivelRiesgo,
+        analisisIa
+      ]);
+    } catch (insertError: any) {
+      // Fallback si la migración de columnas en Supabase aún no se ha ejecutado
+      const queryFallback = `
+        INSERT INTO creditos 
+          (id_cliente, monto_prestado, tasa_interes, total_a_pagar, saldo_pendiente, valor_cuota, frecuencia_pago, fecha_desembolso, estado) 
+        VALUES 
+          ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+        RETURNING *;
+      `;
+      result = await pool.query(queryFallback, [
+        clienteId,
+        montoNum,
+        tasaNum,
+        totalAPagar,
+        saldoPendiente,
+        valorCuota,
+        frecuencia,
+        fechaDesembolso,
+        estadoInicial
+      ]);
+    }
 
     res.status(201).json({
       status: 'success',
