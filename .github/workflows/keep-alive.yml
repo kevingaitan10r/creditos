@@ -4,7 +4,7 @@ on:
   schedule:
     # Se ejecuta todos los días a las 12:00 UTC (07:00 AM hora Colombia)
     - cron: '0 12 * * *'
-  workflow_dispatch: # Permite ejecutarlo manualmente desde la pestaña Actions en GitHub
+  workflow_dispatch: # Permite ejecutarlo manualmente desde GitHub
 
 jobs:
   ping-keep-alive:
@@ -12,21 +12,58 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Ping al endpoint de salud del Backend y Supabase
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Ejecutar Ping de Reactivación
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          URL="https://creditos-gilt.vercel.app/api/health"
-          echo "Realizando ping a: $URL"
-          
-          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}\nTIME_TOTAL:%{time_total}s" -X GET "$URL")
-          echo "Respuesta del servidor:"
-          echo "$RESPONSE"
-          
-          STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d':' -f2)
-          
-          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
-            echo "✅ Ping exitoso (HTTP $STATUS). Supabase y Backend se mantienen activos."
-          else
-            echo "⚠️ El servidor respondió con código HTTP $STATUS. Reintentando ping a la raíz..."
-            curl -s -I -X GET "https://creditos-gilt.vercel.app/"
-            echo "Ping alternativo completado."
-          fi
+          node -e '
+            const https = require("https");
+
+            function pingUrl(url) {
+              return new Promise((resolve) => {
+                console.log("Realizando ping a:", url);
+                https.get(url, (res) => {
+                  console.log("Código de respuesta:", res.statusCode);
+                  resolve(res.statusCode);
+                }).on("error", (err) => {
+                  console.log("Aviso de conexión:", err.message);
+                  resolve(null);
+                });
+              });
+            }
+
+            async function run() {
+              // 1. Ping al endpoint /api/health
+              let status = await pingUrl("https://creditos-gilt.vercel.app/api/health");
+              
+              // 2. Ping a la URL principal
+              await pingUrl("https://creditos-gilt.vercel.app/");
+
+              // 3. Si tienes configurada DATABASE_URL en GitHub Secrets, consulta directa a Supabase
+              if (process.env.DATABASE_URL) {
+                console.log("Ejecutando consulta directa a Supabase (PostgreSQL)...");
+                try {
+                  const { Client } = require("pg");
+                  const client = new Client({
+                    connectionString: process.env.DATABASE_URL,
+                    ssl: { rejectUnauthorized: false }
+                  });
+                  await client.connect();
+                  const res = await client.query("SELECT NOW() as db_time;");
+                  console.log("✅ Supabase activo y respondiendo:", res.rows[0].db_time);
+                  await client.end();
+                } catch (e) {
+                  console.log("Aviso en consulta directa:", e.message);
+                }
+              }
+
+              console.log("✅ Proceso completado exitosamente.");
+            }
+
+            run();
+          '
